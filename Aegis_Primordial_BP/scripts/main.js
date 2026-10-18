@@ -25,6 +25,7 @@ import {
   ItemStack,
   GameMode,
 } from "@minecraft/server";
+import { ActionFormData, MessageFormData } from "@minecraft/server-ui";
 
 // ----------------------------------------------------------------------------
 //  CONFIGURATION
@@ -81,6 +82,13 @@ export const CONFIG = Object.freeze({
   AURA_INTERVAL_TICKS: 120, // 6 s
   AURA_RADIUS: 12,
   AUTO_SPAWN_ON_FIRST_DETECTION: true,
+  RELAY_SCAN_TICKS: 40, // Null Veil Relay: world-wide threat sweep every 2 s
+  RELAY_PLAYER_RADIUS: 48, // a Locust within this range of a player counts as a threat
+  THREAT_RADIUS: 10, // Locust this close to a player => Aegis interposes itself
+  HUD_TICKS: 10,
+  HUD_RADIUS: 40,
+  REGEN_THRESHOLD: 0.3, // Veil Regeneration below 30% HP
+  REGEN_COOLDOWN_TICKS: 600,
   AUTO_SPAWN_COOLDOWN_TICKS: 1200, // 60 s
   CHAT_PREFIX: "§b[Aegis]§r ",
 });
@@ -92,6 +100,40 @@ export const CONFIG = Object.freeze({
 const aegisState = new Map();
 let lastAutoSpawnTick = -999999;
 let totalErased = 0;
+
+// Persisted world settings ----------------------------------------------------
+//  mode:  "guard"   -> relay only to protect players (default)
+//         "hunter"  -> relay to ANY Locust anywhere, auto-deploy aggressively
+//         "passive" -> no auto-deploy, no relay; still erases on contact/hit
+const MODES = ["guard", "hunter", "passive"];
+function getMode() {
+  const m = world.getDynamicProperty("aegis:mode");
+  return MODES.includes(m) ? m : "guard";
+}
+function setMode(m) {
+  if (MODES.includes(m)) world.setDynamicProperty("aegis:mode", m);
+}
+function hudEnabled() {
+  return world.getDynamicProperty("aegis:hud") !== false;
+}
+function allDimensions() {
+  const out = [];
+  for (const id of ["overworld", "nether", "the_end"]) {
+    const d = safe(() => world.getDimension(id), null);
+    if (d) out.push(d);
+  }
+  return out;
+}
+function allAegis() {
+  const out = [];
+  for (const d of allDimensions()) for (const a of safe(() => d.getEntities({ type: CONFIG.AEGIS_ID }), [])) out.push(a);
+  return out;
+}
+function allLocusts() {
+  const out = [];
+  for (const d of allDimensions()) for (const e of safe(() => d.getEntities(), [])) if (isLocust(e)) out.push(e);
+  return out;
+}
 
 // ----------------------------------------------------------------------------
 //  UTILITIES
@@ -295,7 +337,13 @@ function releaseNullSever(aegis, origin) {
 
   const targets = findLocusts(loc, dim, CONFIG.NULL_SEVER_ERASE_RADIUS);
   let count = 0;
-  for (const tgt of targets) if (nullify(tgt, aegis, "Null Sever")) count++;
+  for (const tgt of targets) {
+    traceBeam(dim, { x: loc.x, y: loc.y + 1.3, z: loc.z }, { x: tgt.location.x, y: tgt.location.y + 1, z: tgt.location.z });
+    if (nullify(tgt, aegis, "Null Sever")) count++;
+  }
+  for (const p of dim.getPlayers({ location: loc, maxDistance: 32 })) {
+    safe(() => p.onScreenDisplay.setTitle("§b◈ NULL SEVER", { fadeInDuration: 2, stayDuration: 18, fadeOutDuration: 10, subtitle: count > 0 ? `§7${count} signature(s) erased` : "§7no signature in range" }));
+  }
 
   // Restore state
   safe(() => aegis.triggerEvent("aegis:null_sever_complete"));
@@ -314,10 +362,31 @@ function releaseNullSever(aegis, origin) {
   }
 }
 
+function traceBeam(dim, from, to) {
+  const d = dist(from, to);
+  const steps = Math.max(2, Math.min(80, Math.floor(d / 0.6)));
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const pos = { x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t, z: from.z + (to.z - from.z) * t };
+    safe(() => dim.spawnParticle("aegis:beam_trace", pos));
+  }
+}
+
 // ----------------------------------------------------------------------------
 //  BLINK — void step toward a distant target (keeps hunting reliable even when
 //  Locust ports teleport or noclip)
 // ----------------------------------------------------------------------------
+function blinkTo(aegis, dest, face, st) {
+  if (st) st.lastBlink = system.currentTick;
+  const dim = aegis.dimension;
+  const a = aegis.location;
+  safe(() => dim.spawnParticle("aegis:blink_out", { x: a.x, y: a.y + 1, z: a.z }));
+  safe(() => dim.playSound("aegis.blink", a, { volume: 0.9, pitch: 1.0 }));
+  safe(() => aegis.teleport(dest, { dimension: dest.dimension ?? dim, facingLocation: face, keepVelocity: false }));
+  const d2 = dest.dimension ?? dim;
+  safe(() => d2.spawnParticle("aegis:blink_in", { x: dest.x, y: dest.y + 1, z: dest.z }));
+}
+
 function blinkToward(aegis, target, st) {
   if (system.currentTick - st.lastBlink < 40) return;
   st.lastBlink = system.currentTick;
@@ -360,7 +429,7 @@ function pulseAura(aegis, st) {
 //  AUTO-SPAWN ON FIRST DETECTION
 // ----------------------------------------------------------------------------
 function maybeAutoSpawn(locust) {
-  if (!CONFIG.AUTO_SPAWN_ON_FIRST_DETECTION) return;
+  if (!CONFIG.AUTO_SPAWN_ON_FIRST_DETECTION || getMode() === "passive") return;
   if (system.currentTick - lastAutoSpawnTick < CONFIG.AUTO_SPAWN_COOLDOWN_TICKS) return;
   const dim = locust.dimension;
   const existing = dim.getEntities({ type: CONFIG.AEGIS_ID, location: locust.location, maxDistance: 96 });
@@ -394,6 +463,19 @@ function tickAegis(aegis) {
   const loc = aegis.location;
   const locusts = findLocusts(loc, dim, CONFIG.DETECTION_RADIUS);
 
+  // Veil Regeneration: emergency disengage + heal when badly hurt.
+  const hp = safe(() => aegis.getComponent("minecraft:health"), null);
+  if (hp && hp.currentValue / hp.effectiveMax < CONFIG.REGEN_THRESHOLD && system.currentTick - (st.lastRegen ?? -99999) > CONFIG.REGEN_COOLDOWN_TICKS) {
+    st.lastRegen = system.currentTick;
+    const ang = Math.random() * Math.PI * 2;
+    blinkTo(aegis, { x: loc.x + Math.cos(ang) * 10, y: loc.y, z: loc.z + Math.sin(ang) * 10 }, loc, st);
+    safe(() => aegis.addEffect("regeneration", 200, { amplifier: 4, showParticles: false }));
+    safe(() => aegis.addEffect("resistance", 200, { amplifier: 3, showParticles: false }));
+    safe(() => aegis.triggerEvent("aegis:cast_aura"));
+    safe(() => dim.spawnParticle("aegis:aura_motes", { x: aegis.location.x, y: aegis.location.y + 1, z: aegis.location.z }));
+    broadcast("§eVeil integrity critical — regenerating.", aegis);
+  }
+
   if (locusts.length === 0) {
     if (state === "overdrive") safe(() => aegis.triggerEvent("aegis:return_to_guard"));
     if (system.currentTick - st.lastAura >= CONFIG.AURA_INTERVAL_TICKS && state === "guard") pulseAura(aegis, st);
@@ -413,6 +495,20 @@ function tickAegis(aegis) {
 
   if (d <= CONFIG.OVERDRIVE_RADIUS && state === "guard") {
     safe(() => aegis.triggerEvent("aegis:enter_overdrive"));
+  }
+
+  // Interpose: if a Locust is close to a player and the Aegis is not between
+  // them, blink to the player's side facing the threat.
+  if (!st.severing && system.currentTick - st.lastBlink >= 40) {
+    for (const p of dim.getPlayers({ location: nearest.location, maxDistance: CONFIG.THREAT_RADIUS })) {
+      if (dist(p.location, loc) > 4) {
+        const dx = nearest.location.x - p.location.x, dz = nearest.location.z - p.location.z;
+        const n = Math.max(0.01, Math.hypot(dx, dz));
+        blinkTo(aegis, { x: p.location.x + (dx / n) * 2, y: p.location.y, z: p.location.z + (dz / n) * 2 }, nearest.location, st);
+        broadcast("§7Stay behind me.", p, 8);
+      }
+      break;
+    }
   }
 
   // Continuous soft tracking: face the target, blink if it is far.
@@ -465,6 +561,138 @@ system.runInterval(() => {
     }
   }
 }, CONFIG.SCAN_INTERVAL_TICKS);
+
+// ----------------------------------------------------------------------------
+//  NULL VEIL RELAY — world-wide threat sweep; moves an idle Aegis to wherever a
+//  Locust threatens a player (or anywhere, in hunter mode), across dimensions.
+// ----------------------------------------------------------------------------
+system.runInterval(() => {
+  const mode = getMode();
+  if (mode === "passive") return;
+  const sentinels = allAegis().filter((a) => {
+    const st = aegisState.get(a.id);
+    return !(st && st.severing) && safe(() => a.getProperty("aegis:state"), "guard") !== "fading";
+  });
+  if (sentinels.length === 0) return;
+  for (const locust of allLocusts()) {
+    const ldim = locust.dimension;
+    const covered = sentinels.some((a) => a.dimension.id === ldim.id && dist(a.location, locust.location) <= CONFIG.DETECTION_RADIUS);
+    if (covered) continue;
+    const players = ldim.getPlayers({ location: locust.location, maxDistance: CONFIG.RELAY_PLAYER_RADIUS });
+    if (players.length === 0 && mode !== "hunter") continue;
+    // pick the sentinel that is least busy (no Locust near it), prefer same dimension
+    const idle = sentinels.filter((a) => findLocusts(a.location, a.dimension, CONFIG.DETECTION_RADIUS).length === 0);
+    const pool = idle.length ? idle : sentinels;
+    pool.sort((a, b) => (a.dimension.id === ldim.id ? 0 : 1) - (b.dimension.id === ldim.id ? 0 : 1));
+    const aegis = pool[0];
+    const st = aegisState.get(aegis.id) ?? { lastSever: -99999, severing: false, lastAura: 0, lastBlink: -99999 };
+    aegisState.set(aegis.id, st);
+    const anchor = players[0] ? players[0].location : locust.location;
+    const dx = locust.location.x - anchor.x, dz = locust.location.z - anchor.z;
+    const n = Math.max(0.01, Math.hypot(dx, dz));
+    const dest = { x: anchor.x + (dx / n) * 3, y: anchor.y, z: anchor.z + (dz / n) * 3, dimension: ldim };
+    blinkTo(aegis, dest, locust.location, st);
+    safe(() => aegis.triggerEvent("aegis:enter_overdrive"));
+    broadcast("§eNull Veil Relay: sentinel redeployed to threat.", players[0] ?? null);
+    break; // one relay per sweep
+  }
+}, CONFIG.RELAY_SCAN_TICKS);
+
+// ----------------------------------------------------------------------------
+//  HUD — actionbar for players near a sentinel
+// ----------------------------------------------------------------------------
+system.runInterval(() => {
+  if (!hudEnabled()) return;
+  for (const aegis of allAegis()) {
+    const st = aegisState.get(aegis.id);
+    const hp = safe(() => aegis.getComponent("minecraft:health"), null);
+    const veil = hp ? Math.round((hp.currentValue / hp.effectiveMax) * 100) : 100;
+    const threats = findLocusts(aegis.location, aegis.dimension, CONFIG.DETECTION_RADIUS).length;
+    const cdTicks = st ? Math.max(0, CONFIG.NULL_SEVER_COOLDOWN_TICKS - (system.currentTick - st.lastSever)) : 0;
+    const cd = st && st.severing ? "§dCHARGING" : cdTicks > 0 ? `§e${(cdTicks / 20).toFixed(1)}s` : "§aREADY";
+    const state = safe(() => aegis.getProperty("aegis:state"), "guard");
+    const stateTxt = state === "overdrive" ? "§cOVERDRIVE" : state === "null_sever" ? "§dNULL SEVER" : "§bGUARD";
+    const threatTxt = threats > 0 ? `§c${threats} threat${threats > 1 ? "s" : ""}` : "§7clear";
+    const text = `§b◈ AEGIS §8| ${stateTxt} §8| §7Veil §f${veil}% §8| §7Null Sever ${cd} §8| ${threatTxt}`;
+    for (const p of aegis.dimension.getPlayers({ location: aegis.location, maxDistance: CONFIG.HUD_RADIUS })) {
+      safe(() => p.onScreenDisplay.setActionBar(text));
+    }
+  }
+}, CONFIG.HUD_TICKS);
+
+// ----------------------------------------------------------------------------
+//  COMMAND MENU (Aegis Core while sneaking)
+// ----------------------------------------------------------------------------
+function openMenu(player) {
+  const total = world.getDynamicProperty("aegis:total_erased") ?? 0;
+  const count = allAegis().length;
+  const form = new ActionFormData()
+    .title("§b◈ Aegis Primordial — Command")
+    .body(`§7Sentinels active: §f${count}\n§7Locusts erased: §f${total}\n§7Mode: §f${getMode()}  §7HUD: §f${hudEnabled() ? "on" : "off"}`)
+    .button("§bSummon Sentinel", "textures/items/aegis_core")
+    .button("§eRecall all sentinels to me")
+    .button("§cForce Nullify (all dimensions)")
+    .button(`§dMode: ${getMode()}  §7(cycle)`)
+    .button(`§7HUD: ${hudEnabled() ? "on" : "off"}  §7(toggle)`)
+    .button("§8Dismiss all sentinels");
+  form.show(player).then((r) => {
+    if (r.canceled || r.selection === undefined) return;
+    switch (r.selection) {
+      case 0:
+        summonFor(player);
+        break;
+      case 1: {
+        let n = 0;
+        for (const a of allAegis()) {
+          const st = aegisState.get(a.id);
+          blinkTo(a, { x: player.location.x + (Math.random() - 0.5) * 4, y: player.location.y, z: player.location.z + (Math.random() - 0.5) * 4, dimension: player.dimension }, player.location, st);
+          n++;
+        }
+        player.sendMessage(CONFIG.CHAT_PREFIX + `§7Recalled ${n} sentinel(s).`);
+        break;
+      }
+      case 2:
+        new MessageFormData().title("§cForce Nullify").body("Erase every Locust signature in all dimensions right now?").button1("§cErase").button2("Cancel").show(player).then((m) => {
+          if (m.selection === 0) {
+            let n = 0;
+            for (const t of allLocusts()) if (nullify(t, null, "force_nullify")) n++;
+            player.sendMessage(CONFIG.CHAT_PREFIX + `§7Force nullify complete: §f${n}§7 erased.`);
+          }
+        });
+        break;
+      case 3: {
+        const next = MODES[(MODES.indexOf(getMode()) + 1) % MODES.length];
+        setMode(next);
+        player.sendMessage(CONFIG.CHAT_PREFIX + `§7Mode set to §f${next}§7.`);
+        break;
+      }
+      case 4:
+        world.setDynamicProperty("aegis:hud", !hudEnabled());
+        player.sendMessage(CONFIG.CHAT_PREFIX + `§7HUD ${hudEnabled() ? "enabled" : "disabled"}.`);
+        break;
+      case 5:
+        for (const a of allAegis()) safe(() => a.triggerEvent("aegis:begin_fade"));
+        player.sendMessage(CONFIG.CHAT_PREFIX + "§7All sentinels dismissed.");
+        break;
+    }
+  });
+}
+
+function summonFor(player) {
+  const dim = player.dimension;
+  const view = player.getViewDirection();
+  const pos = { x: player.location.x + view.x * 2.5, y: player.location.y, z: player.location.z + view.z * 2.5 };
+  const existing = dim.getEntities({ type: CONFIG.AEGIS_ID, location: pos, maxDistance: 6 });
+  if (existing.length > 0) {
+    player.sendMessage(CONFIG.CHAT_PREFIX + "§7A sentinel already stands here.");
+    return null;
+  }
+  const aegis = safe(() => dim.spawnEntity(CONFIG.AEGIS_ID, pos), null);
+  if (!aegis) return null;
+  safe(() => aegis.lookAt(player.location));
+  safe(() => player.playSound("aegis.core_activate", { volume: 1.0, pitch: 1.0 }));
+  return aegis;
+}
 
 // ----------------------------------------------------------------------------
 //  EVENTS
@@ -566,6 +794,28 @@ system.afterEvents.scriptEventReceive.subscribe(
         broadcast(`Status: §f${aegisState.size}§7 sentinel(s) tracked, §f${total}§7 Locust(s) erased this world.`);
         break;
       }
+      case "aegis:mode": {
+        if (MODES.includes(message)) {
+          setMode(message);
+          broadcast(`Mode set to §f${message}§7.`);
+        } else broadcast(`§cUnknown mode. Use: ${MODES.join(" | ")}`);
+        break;
+      }
+      case "aegis:hud":
+        world.setDynamicProperty("aegis:hud", message !== "off");
+        broadcast(`HUD ${hudEnabled() ? "enabled" : "disabled"}.`);
+        break;
+      case "aegis:recall": {
+        const p = isValid(sourceEntity) ? sourceEntity : null;
+        if (!p) break;
+        for (const a of allAegis()) blinkTo(a, { x: p.location.x, y: p.location.y, z: p.location.z, dimension: p.dimension }, p.location, aegisState.get(a.id));
+        break;
+      }
+      case "aegis:help":
+        broadcast(
+          "§7Commands:\n§f/scriptevent aegis:status§7 — overview\n§f/scriptevent aegis:force_nullify <radius|0>§7 — erase Locusts\n§f/scriptevent aegis:mode guard|hunter|passive§7\n§f/scriptevent aegis:hud on|off§7\n§f/scriptevent aegis:recall§7 — bring sentinels to you\n§7Sneak + use Aegis Core opens the command menu."
+        );
+        break;
       case "aegis:register":
       case "aegis:overdrive":
       default:
@@ -583,22 +833,12 @@ system.beforeEvents.startup.subscribe((ev) => {
     onUse(e) {
       const player = e.source;
       if (!isValid(player)) return;
-      const dim = player.dimension;
-      const view = player.getViewDirection();
-      const pos = {
-        x: player.location.x + view.x * 2.5,
-        y: player.location.y,
-        z: player.location.z + view.z * 2.5,
-      };
-      const existing = dim.getEntities({ type: CONFIG.AEGIS_ID, location: pos, maxDistance: 6 });
-      if (existing.length > 0) {
-        player.sendMessage(CONFIG.CHAT_PREFIX + "§7A sentinel already stands here.");
+      if (player.isSneaking) {
+        system.run(() => openMenu(player));
         return;
       }
-      const aegis = safe(() => dim.spawnEntity(CONFIG.AEGIS_ID, pos), null);
+      const aegis = summonFor(player);
       if (!aegis) return;
-      safe(() => aegis.lookAt(player.location));
-      safe(() => player.playSound("aegis.core_activate", { volume: 1.0, pitch: 1.0 }));
       // Consume one core (not in creative)
       if (safe(() => player.getGameMode(), GameMode.Creative) !== GameMode.Creative) {
         const inv = player.getComponent("minecraft:equippable");

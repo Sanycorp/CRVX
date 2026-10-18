@@ -855,6 +855,54 @@
       "1.35": 1.8,
       "1.6": 1
      }
+    },
+    "wing_l": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "1.2": [
+       0,
+       25,
+       -20
+      ],
+      "1.35": [
+       0,
+       -30,
+       35
+      ],
+      "1.6": [
+       0,
+       0,
+       0
+      ]
+     }
+    },
+    "wing_r": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "1.2": [
+       0,
+       -25,
+       20
+      ],
+      "1.35": [
+       0,
+       30,
+       -35
+      ],
+      "1.6": [
+       0,
+       0,
+       0
+      ]
+     }
     }
    }
   },
@@ -1366,6 +1414,27 @@
        0
       ]
      }
+    }
+   }
+  },
+  "animation.aegis_primordial.wings": {
+   "loop": true,
+   "bones": {
+    "wing_l": {
+     "scale": "v.wings",
+     "rotation": [
+      "0",
+      "math.sin(q.life_time*160)*6",
+      "math.sin(q.life_time*120)*5"
+     ]
+    },
+    "wing_r": {
+     "scale": "v.wings",
+     "rotation": [
+      "0",
+      "-math.sin(q.life_time*160)*6",
+      "-math.sin(q.life_time*120)*5"
+     ]
     }
    }
   }

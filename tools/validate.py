@@ -21,7 +21,7 @@ for p in glob.glob(os.path.join(ROOT, "Aegis_Primordial_*", "**", "*.json"), rec
         errors.append(f"JSON parse error {p}: {e}")
 
 bp_m, rp_m = J(os.path.join(BP, "manifest.json")), J(os.path.join(RP, "manifest.json"))
-if bp_m["dependencies"][1]["uuid"] != rp_m["header"]["uuid"]:
+if not any(d.get("uuid") == rp_m["header"]["uuid"] for d in bp_m["dependencies"]):
     errors.append("BP does not depend on RP uuid")
 if rp_m["dependencies"][0]["uuid"] != bp_m["header"]["uuid"]:
     errors.append("RP does not depend on BP uuid")

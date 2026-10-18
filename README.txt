@@ -52,7 +52,35 @@ DETECTION
   Aegis are never targeted. Edit CONFIG at the top of scripts/main.js to add
   more identifiers.
 
+COMMAND MENU (NEW)
+  Sneak + use the Aegis Core to open the command UI:
+    Summon Sentinel | Recall all to me | Force Nullify (all dims)
+    Mode cycle (guard / hunter / passive) | HUD toggle | Dismiss all
+  Modes:  guard   = relay sentinels only to protect players (default)
+          hunter  = relay to ANY Locust anywhere, even unobserved
+          passive = no auto-deploy / relay; still erases on contact & hit
+
+NULL VEIL RELAY (NEW)
+  Every 2 s the script sweeps all dimensions. If a Locust threatens a player
+  and no sentinel covers it, an idle sentinel void-steps there (cross-dimension)
+  and lands between the player and the threat. Sentinels also interpose
+  themselves whenever a Locust gets within 10 blocks of a player.
+
+HUD + CINEMATICS (NEW)
+  Actionbar for players within 40 blocks: state, Veil integrity %, Null Sever
+  cooldown, threat count. Null Sever shows a title card, draws a particle beam
+  from the sentinel's core to every erased target, and shakes the camera.
+  Energy wings unfold on the model during Overdrive / Null Sever.
+
+VEIL REGENERATION (NEW)
+  Below 30% HP the sentinel void-steps away, gains Regeneration V +
+  Resistance IV for 10 s and re-engages (30 s cooldown).
+
 OPERATOR COMMANDS
+  /scriptevent aegis:help          list all commands
+  /scriptevent aegis:mode <guard|hunter|passive>
+  /scriptevent aegis:hud <on|off>
+  /scriptevent aegis:recall        bring every sentinel to you
   /function aegis/nullify_all      erase every Locust in all dimensions now
   /function aegis/status           tracked sentinels + total erased
   /function aegis/mark_target      tag the nearest mob as a target

@@ -91,6 +91,15 @@ bone("lowerleg_l", "leg_l", (2.2, 6, 0), [((0.2, 0, -2), (4, 6, 4), "plate_dark"
 bone("boot_l", "lowerleg_l", (2.2, 0, 0), [((0.0, 0, -2.6), (4.4, 2.6, 4.8), "boot")])
 bone("knee_l", "lowerleg_l", (2.2, 6, -2), [((0.5, 4.8, -2.4), (3.4, 2.4, 0.6), "plate")])
 
+# Energy wings (hidden in guard mode via v.wings scale, unfold in overdrive / null sever)
+bone("wing_l", "torso", (1.5, 22.5, 3.2))
+bone("wing_r", "torso", (-1.5, 22.5, 3.2))
+for side, sx, parent in (("l", 1, "wing_l"), ("r", -1, "wing_r")):
+    for i, (ang, length, thick) in enumerate(((18, 11, 0.9), (42, 13, 0.8), (68, 10, 0.7))):
+        ox = 1.5 if sx > 0 else -1.5 - length
+        bone(f"wing_{side}_{i}", parent, (1.5 * sx, 22.5, 3.2), [((ox, 22.1, 3.0), (length, thick, 0.4), "glow")],
+             rotation=[0, 0, -ang * sx])
+
 # Particle / locator attachment points
 LOCATORS = {
     "head": {"eyes": [0, 30.5, -4.5]},
@@ -165,6 +174,8 @@ def build():
     geo_bones = []
     for b in bones:
         gb = {"name": b["name"], "pivot": b["pivot"]}
+        if "rotation" in b:
+            gb["rotation"] = b["rotation"]
         if b["parent"]:
             gb["parent"] = b["parent"]
         if b["cubes"]:

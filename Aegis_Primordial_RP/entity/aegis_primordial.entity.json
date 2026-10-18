@@ -23,16 +23,19 @@
      "v.state_glow = q.property('aegis:state') == 'null_sever' ? 1.0 : (q.property('aegis:state') == 'overdrive' ? 0.8 : (q.property('aegis:state') == 'spawning' ? 0.9 : q.property('aegis:glow')));",
      "v.pulse = 0.5 + 0.5 * math.sin(q.life_time * (q.property('aegis:state') == 'overdrive' ? 540 : 120));",
      "v.glow = math.clamp(v.state_glow * (0.75 + 0.25 * v.pulse), 0.0, 1.0);",
-     "v.glow_overlay = q.property('aegis:state') == 'null_sever' ? 0.18 + 0.22 * v.pulse : (q.property('aegis:state') == 'overdrive' ? 0.05 + 0.08 * v.pulse : 0.0);"
+     "v.glow_overlay = q.property('aegis:state') == 'null_sever' ? 0.18 + 0.22 * v.pulse : (q.property('aegis:state') == 'overdrive' ? 0.05 + 0.08 * v.pulse : 0.0);",
+     "v.wings_target = (q.property('aegis:state') == 'overdrive' || q.property('aegis:state') == 'null_sever') ? 1.0 : 0.0;",
+     "v.wings = v.wings + (v.wings_target - v.wings) * 0.12;"
     ],
     "animate": [
      "general",
      "overdrive",
      "look",
-     "hurt_ctrl"
+     "hurt_ctrl",
+     "wings"
     ],
     "initialize": [
-     "v.glow = 0.35; v.glow_overlay = 0.0; v.attack_time = 0.0;"
+     "v.glow = 0.35; v.glow_overlay = 0.0; v.attack_time = 0.0; v.wings = 0.0;"
     ],
     "scale": "1.0"
    },
@@ -51,7 +54,8 @@
     "general": "controller.animation.aegis_primordial.general",
     "overdrive": "controller.animation.aegis_primordial.overdrive",
     "look": "controller.animation.aegis_primordial.look",
-    "hurt_ctrl": "controller.animation.aegis_primordial.hurt"
+    "hurt_ctrl": "controller.animation.aegis_primordial.hurt",
+    "wings": "animation.aegis_primordial.wings"
    },
    "particle_effects": {
     "eye": "aegis:eye_glow",

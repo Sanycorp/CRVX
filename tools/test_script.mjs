@@ -25,6 +25,7 @@ class Entity {
   }
   getComponent(id) {
     if (id === "minecraft:type_family") return { getTypeFamilies: () => this.families };
+    if (id === "minecraft:health") return { currentValue: this.health, effectiveMax: 1000 };
     return undefined;
   }
   hasTag(t) { return this.tags.has(t); }
@@ -44,10 +45,13 @@ class Entity {
   runCommand(c) { log.push(`CMD ${c}`); return { successCount: 1 }; }
   addEffect(e) { this.effects.push(e); }
   getViewDirection() { return { x: 0, y: 0, z: 1 }; }
+  get onScreenDisplay() { return { setActionBar: (t) => (this.lastHud = t), setTitle: (t) => (this.lastTitle = t) }; }
+  get isSneaking() { return false; }
 }
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
 const dim = {
   id: "overworld",
+  get dimension() { return this; },
   getEntities(q = {}) {
     return [...entities].filter((e) => {
       if (q.type && e.typeId !== q.type) return false;
@@ -104,6 +108,9 @@ globalThis.console.warn = (m) => log.push("WARN " + m);
 const dir = mkdtempSync(join(tmpdir(), "aegis-"));
 mkdirSync(join(dir, "node_modules/@minecraft/server"), { recursive: true });
 writeFileSync(join(dir, "node_modules/@minecraft/server/package.json"), JSON.stringify({ name: "@minecraft/server", type: "module", main: "index.js" }));
+mkdirSync(join(dir, "node_modules/@minecraft/server-ui"), { recursive: true });
+writeFileSync(join(dir, "node_modules/@minecraft/server-ui/package.json"), JSON.stringify({ name: "@minecraft/server-ui", type: "module", main: "index.js" }));
+writeFileSync(join(dir, "node_modules/@minecraft/server-ui/index.js"), "export class ActionFormData{title(){return this}body(){return this}button(){return this}show(){return Promise.resolve({canceled:true})}}; export class MessageFormData extends ActionFormData{button1(){return this}button2(){return this}}");
 writeFileSync(join(dir, "node_modules/@minecraft/server/index.js"),
   `export const world = globalThis.__world; export const system = globalThis.__system;
    export const EntityDamageCause = { override: "override", selfDestruct: "selfDestruct" };
@@ -166,6 +173,18 @@ const mystery = new Entity("unknown:thing", { x: 2, y: 64, z: 2 }, { families: [
 mystery.tags.add("aegis_target");
 scriptEventSubs.forEach((f) => f({ id: "aegis:force_nullify", message: "0", sourceEntity: undefined }));
 assert(!mystery.isValid, "tagged entity erased by /scriptevent aegis:force_nullify");
+
+console.log("\n[6b] Null Veil Relay + HUD");
+const farLocust = new Entity("locust:locust", { x: 300, y: 64, z: 300 }, { families: ["locust"], invulnerable: true });
+const farPlayer = new Entity("minecraft:player", { x: 290, y: 64, z: 300 }, { families: ["player"] });
+advance(45);
+assert(dist(aegis.location, farPlayer.location) < 6, "relay blinked the sentinel next to the threatened player");
+advance(260);
+assert(!farLocust.isValid, "relayed sentinel erased the far Locust");
+assert(typeof farPlayer.lastHud === "string" && farPlayer.lastHud.includes("AEGIS"), "actionbar HUD shown to nearby player");
+scriptEventSubs.forEach((f) => f({ id: "aegis:mode", message: "hunter" }));
+assert(world.getDynamicProperty("aegis:mode") === "hunter", "mode persisted via scriptevent");
+entities.delete(farPlayer);
 
 console.log("\n[7] Protective aura");
 player.location = { ...aegis.location };
