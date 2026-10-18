@@ -1,0 +1,272 @@
+{
+ "format_version": "1.14.0",
+ "sound_definitions": {
+  "aegis.spawn": {
+   "category": "hostile",
+   "min_distance": 24,
+   "sounds": [
+    {
+     "name": "sounds/aegis/spawn",
+     "volume": 1.0,
+     "pitch": [
+      0.95,
+      1.05
+     ]
+    }
+   ],
+   "max_distance": 64
+  },
+  "aegis.idle": {
+   "category": "ambient",
+   "min_distance": 8,
+   "sounds": [
+    {
+     "name": "sounds/aegis/idle_ambient",
+     "volume": 0.5,
+     "pitch": [
+      0.98,
+      1.02
+     ]
+    }
+   ],
+   "max_distance": 24
+  },
+  "aegis.step": {
+   "category": "neutral",
+   "min_distance": 8,
+   "sounds": [
+    {
+     "name": "sounds/aegis/step",
+     "volume": 0.6,
+     "pitch": [
+      0.9,
+      1.1
+     ]
+    }
+   ],
+   "max_distance": 24
+  },
+  "aegis.attack.slash": {
+   "category": "hostile",
+   "min_distance": 16,
+   "sounds": [
+    {
+     "name": "sounds/aegis/attack_slash",
+     "volume": 1.0,
+     "pitch": [
+      0.9,
+      1.1
+     ]
+    }
+   ],
+   "max_distance": 48
+  },
+  "aegis.attack.impact": {
+   "category": "hostile",
+   "min_distance": 16,
+   "sounds": [
+    {
+     "name": "sounds/aegis/attack_impact",
+     "volume": 1.0,
+     "pitch": [
+      0.9,
+      1.1
+     ]
+    }
+   ],
+   "max_distance": 48
+  },
+  "aegis.null_sever.charge": {
+   "category": "hostile",
+   "min_distance": 32,
+   "sounds": [
+    {
+     "name": "sounds/aegis/null_sever_charge",
+     "volume": 1.0,
+     "pitch": 1.0
+    }
+   ],
+   "max_distance": 96
+  },
+  "aegis.null_sever.charge_layer": {
+   "category": "hostile",
+   "min_distance": 24,
+   "sounds": [
+    {
+     "name": "sounds/aegis/null_sever_charge_layer",
+     "volume": 0.8,
+     "pitch": [
+      0.95,
+      1.1
+     ]
+    }
+   ],
+   "max_distance": 64
+  },
+  "aegis.null_sever.release": {
+   "category": "hostile",
+   "min_distance": 48,
+   "sounds": [
+    {
+     "name": "sounds/aegis/null_sever_release",
+     "volume": 1.0,
+     "pitch": 1.0
+    }
+   ],
+   "max_distance": 128
+  },
+  "aegis.null_sever.tear": {
+   "category": "hostile",
+   "min_distance": 32,
+   "sounds": [
+    {
+     "name": "sounds/aegis/null_sever_tear",
+     "volume": 1.0,
+     "pitch": [
+      0.95,
+      1.05
+     ]
+    }
+   ],
+   "max_distance": 96
+  },
+  "aegis.null_sever.confirm": {
+   "category": "hostile",
+   "min_distance": 24,
+   "sounds": [
+    {
+     "name": "sounds/aegis/null_sever_confirm",
+     "volume": 0.9,
+     "pitch": 1.0
+    }
+   ],
+   "max_distance": 64
+  },
+  "aegis.aura": {
+   "category": "neutral",
+   "min_distance": 16,
+   "sounds": [
+    {
+     "name": "sounds/aegis/aura",
+     "volume": 0.8,
+     "pitch": [
+      0.98,
+      1.02
+     ]
+    }
+   ],
+   "max_distance": 48
+  },
+  "aegis.death": {
+   "category": "hostile",
+   "min_distance": 32,
+   "sounds": [
+    {
+     "name": "sounds/aegis/death",
+     "volume": 1.0,
+     "pitch": 1.0
+    }
+   ],
+   "max_distance": 96
+  },
+  "aegis.blink": {
+   "category": "hostile",
+   "min_distance": 24,
+   "sounds": [
+    {
+     "name": "sounds/aegis/blink",
+     "volume": 0.9,
+     "pitch": [
+      0.9,
+      1.1
+     ]
+    }
+   ],
+   "max_distance": 64
+  },
+  "aegis.overdrive_engage": {
+   "category": "hostile",
+   "min_distance": 32,
+   "sounds": [
+    {
+     "name": "sounds/aegis/overdrive_engage",
+     "volume": 0.9,
+     "pitch": 1.0
+    }
+   ],
+   "max_distance": 96
+  },
+  "aegis.core_activate": {
+   "category": "player",
+   "min_distance": 16,
+   "sounds": [
+    {
+     "name": "sounds/aegis/core_activate",
+     "volume": 1.0,
+     "pitch": 1.0
+    }
+   ],
+   "max_distance": 48
+  },
+  "aegis.vo.target_acquired": {
+   "category": "hostile",
+   "min_distance": 32,
+   "sounds": [
+    {
+     "name": "sounds/aegis/vo_target_acquired",
+     "volume": 1.0,
+     "pitch": 1.0
+    }
+   ],
+   "max_distance": 96
+  },
+  "aegis.vo.nullifying": {
+   "category": "hostile",
+   "min_distance": 32,
+   "sounds": [
+    {
+     "name": "sounds/aegis/vo_nullifying",
+     "volume": 1.0,
+     "pitch": 1.0
+    }
+   ],
+   "max_distance": 96
+  },
+  "aegis.vo.erased": {
+   "category": "hostile",
+   "min_distance": 32,
+   "sounds": [
+    {
+     "name": "sounds/aegis/vo_erased",
+     "volume": 1.0,
+     "pitch": 1.0
+    }
+   ],
+   "max_distance": 96
+  },
+  "aegis.vo.secured": {
+   "category": "hostile",
+   "min_distance": 32,
+   "sounds": [
+    {
+     "name": "sounds/aegis/vo_secured",
+     "volume": 1.0,
+     "pitch": 1.0
+    }
+   ],
+   "max_distance": 96
+  },
+  "aegis.vo.online": {
+   "category": "hostile",
+   "min_distance": 32,
+   "sounds": [
+    {
+     "name": "sounds/aegis/vo_online",
+     "volume": 1.0,
+     "pitch": 1.0
+    }
+   ],
+   "max_distance": 96
+  }
+ }
+}

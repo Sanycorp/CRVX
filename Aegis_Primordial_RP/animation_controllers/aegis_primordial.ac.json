@@ -1,0 +1,171 @@
+{
+ "format_version": "1.10.0",
+ "animation_controllers": {
+  "controller.animation.aegis_primordial.general": {
+   "initial_state": "spawn",
+   "states": {
+    "spawn": {
+     "animations": [
+      "spawn"
+     ],
+     "transitions": [
+      {
+       "idle": "q.property('aegis:state') != 'spawning' || q.any_animation_finished"
+      }
+     ],
+     "blend_transition": 0.3
+    },
+    "idle": {
+     "animations": [
+      "idle"
+     ],
+     "transitions": [
+      {
+       "move": "q.modified_move_speed > 0.08"
+      },
+      {
+       "null_sever": "q.property('aegis:state') == 'null_sever'"
+      },
+      {
+       "attack": "v.attack_time > 0 && v.attack_time < 0.05"
+      },
+      {
+       "aura": "q.property('aegis:state') == 'aura'"
+      },
+      {
+       "death": "q.property('aegis:state') == 'fading' || !q.is_alive"
+      }
+     ],
+     "blend_transition": 0.25
+    },
+    "move": {
+     "animations": [
+      {
+       "walk": "q.property('aegis:state') != 'overdrive'"
+      },
+      {
+       "run": "q.property('aegis:state') == 'overdrive'"
+      }
+     ],
+     "transitions": [
+      {
+       "idle": "q.modified_move_speed <= 0.08"
+      },
+      {
+       "null_sever": "q.property('aegis:state') == 'null_sever'"
+      },
+      {
+       "attack": "v.attack_time > 0 && v.attack_time < 0.05"
+      },
+      {
+       "death": "q.property('aegis:state') == 'fading' || !q.is_alive"
+      }
+     ],
+     "blend_transition": 0.2
+    },
+    "attack": {
+     "animations": [
+      "attack_melee"
+     ],
+     "transitions": [
+      {
+       "idle": "q.all_animations_finished || v.attack_time <= 0"
+      },
+      {
+       "null_sever": "q.property('aegis:state') == 'null_sever'"
+      }
+     ],
+     "blend_transition": 0.1
+    },
+    "null_sever": {
+     "animations": [
+      "attack_null_sever"
+     ],
+     "transitions": [
+      {
+       "idle": "q.property('aegis:state') != 'null_sever' && q.all_animations_finished"
+      },
+      {
+       "death": "q.property('aegis:state') == 'fading'"
+      }
+     ],
+     "blend_transition": 0.15
+    },
+    "aura": {
+     "animations": [
+      "cast_aura"
+     ],
+     "transitions": [
+      {
+       "idle": "q.property('aegis:state') != 'aura' || q.all_animations_finished"
+      }
+     ],
+     "blend_transition": 0.25
+    },
+    "death": {
+     "animations": [
+      "death"
+     ]
+    }
+   }
+  },
+  "controller.animation.aegis_primordial.overdrive": {
+   "initial_state": "off",
+   "states": {
+    "off": {
+     "transitions": [
+      {
+       "on": "q.property('aegis:state') == 'overdrive' && q.modified_move_speed <= 0.08"
+      }
+     ],
+     "blend_transition": 0.3
+    },
+    "on": {
+     "animations": [
+      "overdrive_layer"
+     ],
+     "transitions": [
+      {
+       "off": "q.property('aegis:state') != 'overdrive' || q.modified_move_speed > 0.08"
+      }
+     ],
+     "blend_transition": 0.3
+    }
+   }
+  },
+  "controller.animation.aegis_primordial.look": {
+   "initial_state": "default",
+   "states": {
+    "default": {
+     "animations": [
+      {
+       "look_at_target": "q.property('aegis:state') != 'null_sever' && q.property('aegis:state') != 'spawning'"
+      }
+     ]
+    }
+   }
+  },
+  "controller.animation.aegis_primordial.hurt": {
+   "initial_state": "idle",
+   "states": {
+    "idle": {
+     "transitions": [
+      {
+       "hurt": "q.hurt_time > 0"
+      }
+     ]
+    },
+    "hurt": {
+     "animations": [
+      "hurt"
+     ],
+     "transitions": [
+      {
+       "idle": "q.all_animations_finished"
+      }
+     ]
+    }
+   }
+  }
+ }
+}

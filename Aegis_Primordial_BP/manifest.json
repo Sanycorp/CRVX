@@ -1,0 +1,65 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "pack.name",
+    "description": "pack.description",
+    "uuid": "fc837273-fc2d-4fac-88cb-7e3dc8055ce4",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      80
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "a8dc09d4-b55e-41c0-9520-c60323ad4d8a",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "entry": "scripts/main.js",
+      "uuid": "5dbeb9f5-a26a-4107-9c0d-bc4fcd7a8966",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.0.0"
+    },
+    {
+      "uuid": "81a3c90e-92f0-4652-928c-2eb01a5f487e",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "metadata": {
+    "authors": [
+      "Sanycorp / CRVX"
+    ],
+    "product_type": "addon",
+    "generated_with": {
+      "aegis_pipeline": [
+        "1.0.0"
+      ]
+    }
+  }
+}

@@ -1,0 +1,883 @@
+{
+  "format_version": "1.21.80",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "aegis:primordial_sentinel",
+      "is_spawnable": true,
+      "is_summonable": true,
+      "is_experimental": false,
+      "spawn_category": "creature",
+      "properties": {
+        "aegis:state": {
+          "type": "enum",
+          "values": [
+            "spawning",
+            "guard",
+            "overdrive",
+            "null_sever",
+            "aura",
+            "fading"
+          ],
+          "default": "spawning",
+          "client_sync": true
+        },
+        "aegis:glow": {
+          "type": "float",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "default": 0.35,
+          "client_sync": true
+        },
+        "aegis:erased": {
+          "type": "int",
+          "range": [
+            0,
+            2147483647
+          ],
+          "default": 0,
+          "client_sync": true
+        }
+      },
+      "animations": {
+        "bp_state_machine": "controller.animation.aegis_primordial.bp_state",
+        "bp_null_sever": "animation.aegis_primordial.bp_null_sever",
+        "bp_spawn": "animation.aegis_primordial.bp_spawn",
+        "bp_aura": "animation.aegis_primordial.bp_aura"
+      },
+      "scripts": {
+        "animate": [
+          "bp_state_machine"
+        ]
+      }
+    },
+    "component_groups": {
+      "aegis:spawning": {
+        "minecraft:timer": {
+          "looping": false,
+          "time": 2.0,
+          "time_down_event": {
+            "event": "aegis:return_to_guard",
+            "target": "self"
+          }
+        }
+      },
+      "aegis:default": {
+        "minecraft:movement": {
+          "value": 0.38
+        },
+        "minecraft:attack": {
+          "damage": 30,
+          "effect_name": "weakness",
+          "effect_duration": 5
+        },
+        "minecraft:behavior.random_stroll": {
+          "priority": 9,
+          "speed_multiplier": 0.6,
+          "interval": 160
+        },
+        "minecraft:behavior.look_at_player": {
+          "priority": 10,
+          "look_distance": 12,
+          "probability": 0.08
+        }
+      },
+      "aegis:combat_nullify": {
+        "minecraft:behavior.nearest_attackable_target": {
+          "priority": 1,
+          "must_see": false,
+          "reselect_targets": true,
+          "scan_interval": 10,
+          "within_radius": 64.0,
+          "persist_time": 5.0,
+          "attack_interval": 1,
+          "entity_types": [
+            {
+              "filters": {
+                "all_of": [
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "operator": "!=",
+                    "value": "player"
+                  },
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "operator": "!=",
+                    "value": "aegis"
+                  },
+                  {
+                    "any_of": [
+                      {
+                        "test": "is_family",
+                        "subject": "other",
+                        "value": "locust"
+                      },
+                      {
+                        "test": "is_family",
+                        "subject": "other",
+                        "value": "the_locust"
+                      },
+                      {
+                        "test": "is_family",
+                        "subject": "other",
+                        "value": "locust_evolution"
+                      },
+                      {
+                        "test": "is_family",
+                        "subject": "other",
+                        "value": "nowhere"
+                      },
+                      {
+                        "test": "is_family",
+                        "subject": "other",
+                        "value": "doctor_nowhere"
+                      },
+                      {
+                        "test": "is_family",
+                        "subject": "other",
+                        "value": "toe"
+                      },
+                      {
+                        "test": "is_family",
+                        "subject": "other",
+                        "value": "anomaly"
+                      },
+                      {
+                        "test": "is_family",
+                        "subject": "other",
+                        "value": "horror"
+                      },
+                      {
+                        "test": "has_tag",
+                        "subject": "other",
+                        "value": "aegis_target"
+                      },
+                      {
+                        "test": "has_tag",
+                        "subject": "other",
+                        "value": "locust"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "max_dist": 64,
+              "must_see": false
+            }
+          ]
+        },
+        "minecraft:behavior.melee_box_attack": {
+          "priority": 2,
+          "speed_multiplier": 1.35,
+          "track_target": true,
+          "reach_multiplier": 2.2,
+          "horizontal_reach": 1.5,
+          "cooldown_time": 0.8,
+          "random_stop_interval": 0,
+          "on_attack": {
+            "event": "aegis:on_melee_hit",
+            "target": "self"
+          }
+        },
+        "minecraft:behavior.hurt_by_target": {
+          "priority": 3,
+          "entity_types": [
+            {
+              "filters": {
+                "test": "is_family",
+                "subject": "other",
+                "operator": "!=",
+                "value": "player"
+              }
+            }
+          ]
+        }
+      },
+      "aegis:protective_aura": {
+        "minecraft:behavior.float": {
+          "priority": 0
+        },
+        "minecraft:behavior.tempt": {
+          "priority": 7,
+          "speed_multiplier": 0.9,
+          "within_radius": 10,
+          "items": [
+            "aegis:aegis_core"
+          ],
+          "can_get_scared": false
+        },
+        "minecraft:behavior.follow_mob": {
+          "priority": 6,
+          "speed_multiplier": 1.0,
+          "search_range": 24,
+          "stop_distance": 4,
+          "filters": {
+            "test": "is_family",
+            "subject": "other",
+            "value": "player"
+          }
+        }
+      },
+      "aegis:overdrive": {
+        "minecraft:movement": {
+          "value": 0.52
+        },
+        "minecraft:attack": {
+          "damage": 40,
+          "effect_name": "weakness",
+          "effect_duration": 8
+        },
+        "minecraft:attack_cooldown": {
+          "attack_cooldown_time": 1.0,
+          "attack_cooldown_complete_event": {
+            "event": "aegis:activate_null_sever",
+            "target": "self"
+          }
+        },
+        "minecraft:boss": {
+          "name": "entity.aegis:primordial_sentinel.overdrive",
+          "hud_range": 48,
+          "should_darken_sky": false
+        },
+        "minecraft:behavior.random_stroll": {
+          "priority": 99,
+          "speed_multiplier": 0.0,
+          "interval": 99999
+        },
+        "minecraft:entity_sensor": {
+          "relative_range": false,
+          "subsensors": [
+            {
+              "range": [
+                40.0,
+                16.0
+              ],
+              "minimum_count": 0,
+              "maximum_count": 0,
+              "cooldown": 3.0,
+              "event": "aegis:return_to_guard",
+              "event_filters": {
+                "any_of": [
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "value": "locust"
+                  },
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "value": "the_locust"
+                  },
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "value": "locust_evolution"
+                  },
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "value": "nowhere"
+                  },
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "value": "horror"
+                  },
+                  {
+                    "test": "has_tag",
+                    "subject": "other",
+                    "value": "aegis_target"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "aegis:null_sever": {
+        "minecraft:movement": {
+          "value": 0.0
+        },
+        "minecraft:timer": {
+          "looping": false,
+          "time": 1.6,
+          "time_down_event": {
+            "event": "aegis:null_sever_complete",
+            "target": "self"
+          }
+        }
+      },
+      "aegis:aura_cast": {
+        "minecraft:timer": {
+          "looping": false,
+          "time": 1.4,
+          "time_down_event": {
+            "event": "aegis:return_to_guard",
+            "target": "self"
+          }
+        }
+      },
+      "aegis:sensor_guard": {
+        "minecraft:entity_sensor": {
+          "relative_range": false,
+          "subsensors": [
+            {
+              "range": [
+                32.0,
+                16.0
+              ],
+              "minimum_count": 1,
+              "cooldown": 1.0,
+              "event": "aegis:enter_overdrive",
+              "event_filters": {
+                "all_of": [
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "operator": "!=",
+                    "value": "player"
+                  },
+                  {
+                    "any_of": [
+                      {
+                        "test": "is_family",
+                        "subject": "other",
+                        "value": "locust"
+                      },
+                      {
+                        "test": "is_family",
+                        "subject": "other",
+                        "value": "the_locust"
+                      },
+                      {
+                        "test": "is_family",
+                        "subject": "other",
+                        "value": "locust_evolution"
+                      },
+                      {
+                        "test": "is_family",
+                        "subject": "other",
+                        "value": "nowhere"
+                      },
+                      {
+                        "test": "is_family",
+                        "subject": "other",
+                        "value": "doctor_nowhere"
+                      },
+                      {
+                        "test": "is_family",
+                        "subject": "other",
+                        "value": "toe"
+                      },
+                      {
+                        "test": "is_family",
+                        "subject": "other",
+                        "value": "anomaly"
+                      },
+                      {
+                        "test": "is_family",
+                        "subject": "other",
+                        "value": "horror"
+                      },
+                      {
+                        "test": "has_tag",
+                        "subject": "other",
+                        "value": "aegis_target"
+                      },
+                      {
+                        "test": "has_tag",
+                        "subject": "other",
+                        "value": "locust"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "aegis:fading": {
+        "minecraft:timer": {
+          "looping": false,
+          "time": 2.2,
+          "time_down_event": {
+            "event": "aegis:despawn_now",
+            "target": "self"
+          }
+        },
+        "minecraft:movement": {
+          "value": 0.0
+        }
+      },
+      "aegis:despawn": {
+        "minecraft:instant_despawn": {}
+      }
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": [
+          "aegis",
+          "player_protector",
+          "humanoid",
+          "sentinel",
+          "mob"
+        ]
+      },
+      "minecraft:collision_box": {
+        "width": 0.6,
+        "height": 1.95
+      },
+      "minecraft:health": {
+        "value": 500,
+        "max": 500
+      },
+      "minecraft:nameable": {
+        "always_show": false,
+        "allow_name_tag_renaming": true
+      },
+      "minecraft:physics": {},
+      "minecraft:pushable": {
+        "is_pushable": true,
+        "is_pushable_by_piston": false
+      },
+      "minecraft:push_through": {
+        "value": 0.0
+      },
+      "minecraft:persistent": {},
+      "minecraft:conditional_bandwidth_optimization": {},
+      "minecraft:scale": {
+        "value": 1.0
+      },
+      "minecraft:knockback_resistance": {
+        "value": 1.0
+      },
+      "minecraft:fire_immune": {},
+      "minecraft:breathable": {
+        "total_supply": 15,
+        "suffocate_time": 0,
+        "breathes_air": true,
+        "breathes_water": true,
+        "breathes_lava": true
+      },
+      "minecraft:can_climb": {},
+      "minecraft:jump.static": {
+        "jump_power": 0.5
+      },
+      "minecraft:movement.basic": {},
+      "minecraft:navigation.walk": {
+        "can_path_over_water": true,
+        "can_pass_doors": true,
+        "can_open_doors": true,
+        "can_break_doors": false,
+        "avoid_damage_blocks": false,
+        "avoid_portals": true,
+        "can_walk_in_lava": true,
+        "is_amphibious": true,
+        "can_sink": false
+      },
+      "minecraft:follow_range": {
+        "value": 64,
+        "max": 64
+      },
+      "minecraft:underwater_movement": {
+        "value": 0.3
+      },
+      "minecraft:lava_movement": {
+        "value": 0.2
+      },
+      "minecraft:experience_reward": {
+        "on_death": "0"
+      },
+      "minecraft:attack_damage": {
+        "value": 30
+      },
+      "minecraft:on_target_acquired": {
+        "event": "aegis:enter_overdrive",
+        "target": "self"
+      },
+      "minecraft:on_target_escape": {
+        "event": "aegis:return_to_guard",
+        "target": "self"
+      },
+      "minecraft:on_death": {
+        "event": "aegis:begin_fade",
+        "target": "self"
+      },
+      "minecraft:damage_sensor": {
+        "triggers": [
+          {
+            "on_damage": {
+              "filters": {
+                "any_of": [
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "value": "player"
+                  },
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "value": "aegis"
+                  },
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "value": "locust"
+                  },
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "value": "the_locust"
+                  },
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "value": "locust_evolution"
+                  },
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "value": "nowhere"
+                  },
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "value": "horror"
+                  },
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "value": "anomaly"
+                  }
+                ]
+              }
+            },
+            "deals_damage": "no"
+          },
+          {
+            "on_damage": {
+              "filters": {
+                "any_of": [
+                  {
+                    "test": "has_damage",
+                    "value": "fall"
+                  },
+                  {
+                    "test": "has_damage",
+                    "value": "fire"
+                  },
+                  {
+                    "test": "has_damage",
+                    "value": "fire_tick"
+                  },
+                  {
+                    "test": "has_damage",
+                    "value": "lava"
+                  },
+                  {
+                    "test": "has_damage",
+                    "value": "drowning"
+                  },
+                  {
+                    "test": "has_damage",
+                    "value": "suffocation"
+                  },
+                  {
+                    "test": "has_damage",
+                    "value": "magic"
+                  },
+                  {
+                    "test": "has_damage",
+                    "value": "wither"
+                  },
+                  {
+                    "test": "has_damage",
+                    "value": "freezing"
+                  }
+                ]
+              }
+            },
+            "deals_damage": "no"
+          },
+          {
+            "on_damage": {
+              "filters": {
+                "test": "has_damage",
+                "value": "void"
+              }
+            },
+            "deals_damage": "yes"
+          },
+          {
+            "deals_damage": "yes",
+            "damage_multiplier": 0.5
+          }
+        ]
+      },
+      "minecraft:behavior.float": {
+        "priority": 0
+      },
+      "minecraft:behavior.panic": {
+        "priority": 99,
+        "speed_multiplier": 0.0
+      },
+      "minecraft:behavior.look_at_target": {
+        "priority": 4,
+        "look_distance": 32
+      },
+      "minecraft:behavior.random_look_around": {
+        "priority": 11
+      }
+    },
+    "events": {
+      "minecraft:entity_spawned": {
+        "add": {
+          "component_groups": [
+            "aegis:spawning",
+            "aegis:sensor_guard"
+          ]
+        },
+        "set_property": {
+          "aegis:state": "spawning",
+          "aegis:glow": 1.0
+        },
+        "queue_command": {
+          "command": [
+            "playsound aegis.spawn @a ~ ~ ~ 1.0 1.0 0.2",
+            "particle aegis:spawn_materialize ~ ~1 ~",
+            "tellraw @a[r=48] {\"rawtext\":[{\"text\":\"\u00a7b[Aegis]\u00a7r \u00a77Primordial Sentinel materialized. Null Veil protocol active.\"}]}",
+            "scriptevent aegis:register spawned"
+          ]
+        }
+      },
+      "minecraft:entity_born": {
+        "add": {
+          "component_groups": [
+            "aegis:spawning",
+            "aegis:sensor_guard"
+          ]
+        },
+        "set_property": {
+          "aegis:state": "spawning",
+          "aegis:glow": 1.0
+        }
+      },
+      "minecraft:entity_transformed": {
+        "add": {
+          "component_groups": [
+            "aegis:default",
+            "aegis:combat_nullify",
+            "aegis:protective_aura",
+            "aegis:sensor_guard"
+          ]
+        },
+        "set_property": {
+          "aegis:state": "guard"
+        }
+      },
+      "aegis:return_to_guard": {
+        "remove": {
+          "component_groups": [
+            "aegis:spawning",
+            "aegis:overdrive",
+            "aegis:null_sever",
+            "aegis:aura_cast"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "aegis:default",
+            "aegis:combat_nullify",
+            "aegis:protective_aura",
+            "aegis:sensor_guard"
+          ]
+        },
+        "set_property": {
+          "aegis:state": "guard",
+          "aegis:glow": 0.35
+        }
+      },
+      "aegis:enter_overdrive": {
+        "filters": {
+          "test": "enum_property",
+          "domain": "aegis:state",
+          "operator": "!=",
+          "value": "null_sever"
+        },
+        "remove": {
+          "component_groups": [
+            "aegis:sensor_guard",
+            "aegis:aura_cast"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "aegis:default",
+            "aegis:combat_nullify",
+            "aegis:overdrive"
+          ]
+        },
+        "set_property": {
+          "aegis:state": "overdrive",
+          "aegis:glow": 0.85
+        },
+        "queue_command": {
+          "command": [
+            "playsound aegis.vo.target_acquired @a ~ ~ ~ 1.0 1.0 0.0",
+            "playsound aegis.overdrive_engage @a ~ ~ ~ 0.9 1.0 0.3",
+            "scriptevent aegis:overdrive engaged"
+          ]
+        }
+      },
+      "aegis:activate_null_sever": {
+        "filters": {
+          "all_of": [
+            {
+              "test": "has_target",
+              "value": true
+            },
+            {
+              "test": "enum_property",
+              "domain": "aegis:state",
+              "operator": "!=",
+              "value": "null_sever"
+            }
+          ]
+        },
+        "remove": {
+          "component_groups": [
+            "aegis:overdrive"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "aegis:null_sever"
+          ]
+        },
+        "set_property": {
+          "aegis:state": "null_sever",
+          "aegis:glow": 1.0
+        },
+        "queue_command": {
+          "command": [
+            "playsound aegis.null_sever.charge @a ~ ~ ~ 1.0 1.0 0.0",
+            "playsound aegis.vo.nullifying @a ~ ~ ~ 1.0 1.0 0.0",
+            "particle aegis:null_sever_charge ~ ~1.3 ~",
+            "scriptevent aegis:null_sever charge"
+          ]
+        }
+      },
+      "aegis:null_sever_complete": {
+        "remove": {
+          "component_groups": [
+            "aegis:null_sever"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "aegis:default",
+            "aegis:combat_nullify",
+            "aegis:overdrive"
+          ]
+        },
+        "set_property": {
+          "aegis:state": "overdrive",
+          "aegis:glow": 0.85
+        },
+        "queue_command": {
+          "command": [
+            "playsound aegis.null_sever.release @a ~ ~ ~ 1.0 1.0 0.0",
+            "particle aegis:null_sever_shockwave ~ ~0.1 ~",
+            "particle aegis:null_sever_slash ~ ~1.3 ~",
+            "camerashake add @a[r=24] 0.45 0.7 positional",
+            "scriptevent aegis:null_sever release"
+          ]
+        }
+      },
+      "aegis:on_melee_hit": {
+        "queue_command": {
+          "command": [
+            "playsound aegis.attack.impact @a ~ ~ ~ 1.0 1.0 0.0",
+            "particle aegis:melee_impact ^ ^1.2 ^1.2",
+            "scriptevent aegis:melee_hit struck"
+          ]
+        }
+      },
+      "aegis:force_remove_locust": {
+        "queue_command": {
+          "command": [
+            "scriptevent aegis:force_nullify all",
+            "playsound aegis.null_sever.tear @a ~ ~ ~ 1.0 1.0 0.0"
+          ]
+        }
+      },
+      "aegis:cast_aura": {
+        "filters": {
+          "test": "enum_property",
+          "domain": "aegis:state",
+          "value": "guard"
+        },
+        "add": {
+          "component_groups": [
+            "aegis:aura_cast"
+          ]
+        },
+        "set_property": {
+          "aegis:state": "aura",
+          "aegis:glow": 0.7
+        },
+        "queue_command": {
+          "command": [
+            "playsound aegis.aura @a ~ ~ ~ 0.8 1.0 0.0",
+            "particle aegis:aura_ring ~ ~0.1 ~",
+            "particle aegis:aura_motes ~ ~1 ~",
+            "effect @a[r=12] resistance 10 1 true",
+            "effect @a[r=12] regeneration 8 1 true",
+            "effect @e[r=12,family=horror] slowness 6 2 true",
+            "effect @e[r=12,family=locust] weakness 6 3 true",
+            "scriptevent aegis:aura pulse"
+          ]
+        }
+      },
+      "aegis:begin_fade": {
+        "remove": {
+          "component_groups": [
+            "aegis:default",
+            "aegis:combat_nullify",
+            "aegis:protective_aura",
+            "aegis:overdrive",
+            "aegis:null_sever",
+            "aegis:sensor_guard"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "aegis:fading"
+          ]
+        },
+        "set_property": {
+          "aegis:state": "fading",
+          "aegis:glow": 1.0
+        },
+        "queue_command": {
+          "command": [
+            "playsound aegis.death @a ~ ~ ~ 1.0 1.0 0.0",
+            "particle aegis:dissolve ~ ~1 ~",
+            "tellraw @a[r=48] {\"rawtext\":[{\"text\":\"\u00a7b[Aegis]\u00a7r \u00a77The sentinel dissolves into the veil... Summon another Aegis Core to restore the watch.\"}]}"
+          ]
+        }
+      },
+      "aegis:despawn_now": {
+        "add": {
+          "component_groups": [
+            "aegis:despawn"
+          ]
+        }
+      }
+    }
+  }
+}

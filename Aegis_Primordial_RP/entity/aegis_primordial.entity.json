@@ -1,0 +1,68 @@
+{
+ "format_version": "1.10.0",
+ "minecraft:client_entity": {
+  "description": {
+   "identifier": "aegis:primordial_sentinel",
+   "min_engine_version": "1.21.0",
+   "materials": {
+    "default": "entity_emissive_alpha"
+   },
+   "textures": {
+    "default": "textures/entity/aegis_primordial",
+    "overdrive": "textures/entity/aegis_primordial_overdrive"
+   },
+   "geometry": {
+    "default": "geometry.aegis_primordial"
+   },
+   "spawn_egg": {
+    "base_color": "#0d1016",
+    "overlay_color": "#3eecff"
+   },
+   "scripts": {
+    "pre_animation": [
+     "v.attack_time = q.attack_time;",
+     "v.state_glow = q.property('aegis:state') == 'null_sever' ? 1.0 : (q.property('aegis:state') == 'overdrive' ? 0.8 : (q.property('aegis:state') == 'spawning' ? 0.9 : q.property('aegis:glow')));",
+     "v.pulse = 0.5 + 0.5 * math.sin(q.life_time * (q.property('aegis:state') == 'overdrive' ? 540 : 120));",
+     "v.glow = math.clamp(v.state_glow * (0.75 + 0.25 * v.pulse), 0.0, 1.0);",
+     "v.glow_overlay = q.property('aegis:state') == 'null_sever' ? 0.18 + 0.22 * v.pulse : (q.property('aegis:state') == 'overdrive' ? 0.05 + 0.08 * v.pulse : 0.0);"
+    ],
+    "animate": [
+     "general",
+     "overdrive",
+     "look",
+     "hurt_ctrl"
+    ]
+   },
+   "animations": {
+    "idle": "animation.aegis_primordial.idle",
+    "walk": "animation.aegis_primordial.walk",
+    "run": "animation.aegis_primordial.run",
+    "look_at_target": "animation.aegis_primordial.look_at_target",
+    "attack_melee": "animation.aegis_primordial.attack_melee",
+    "attack_null_sever": "animation.aegis_primordial.attack_null_sever",
+    "cast_aura": "animation.aegis_primordial.cast_aura",
+    "spawn": "animation.aegis_primordial.spawn",
+    "death": "animation.aegis_primordial.death",
+    "hurt": "animation.aegis_primordial.hurt",
+    "overdrive_layer": "animation.aegis_primordial.overdrive_layer",
+    "general": "controller.animation.aegis_primordial.general",
+    "overdrive": "controller.animation.aegis_primordial.overdrive",
+    "look": "controller.animation.aegis_primordial.look",
+    "hurt_ctrl": "controller.animation.aegis_primordial.hurt"
+   },
+   "particle_effects": {
+    "eye": "aegis:eye_glow",
+    "core": "aegis:core_pulse",
+    "aura": "aegis:aura_ring",
+    "dissolve": "aegis:dissolve"
+   },
+   "sound_effects": {
+    "step": "aegis.step"
+   },
+   "render_controllers": [
+    "controller.render.aegis_primordial"
+   ],
+   "enable_attachables": false
+  }
+ }
+}

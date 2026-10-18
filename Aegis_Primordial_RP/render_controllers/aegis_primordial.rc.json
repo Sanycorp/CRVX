@@ -1,0 +1,31 @@
+{
+ "format_version": "1.10.0",
+ "render_controllers": {
+  "controller.render.aegis_primordial": {
+   "geometry": "Geometry.default",
+   "materials": [
+    {
+     "*": "Material.default"
+    }
+   ],
+   "textures": [
+    {
+     "*": "q.property('aegis:state') == 'overdrive' || q.property('aegis:state') == 'null_sever' ? Texture.overdrive : Texture.default"
+    }
+   ],
+   "is_hurt_color": {
+    "r": 0.3,
+    "g": 0.9,
+    "b": 1.0,
+    "a": 0.4
+   },
+   "overlay_color": {
+    "r": 0.25,
+    "g": 0.95,
+    "b": 1.0,
+    "a": "v.glow_overlay"
+   },
+   "light_color_multiplier": "1.0 + v.glow * 0.8"
+  }
+ }
+}

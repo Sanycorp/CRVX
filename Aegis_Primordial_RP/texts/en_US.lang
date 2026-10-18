@@ -1,0 +1,7 @@
+pack.name=Aegis Primordial — Locust Nullifier (Resources)
+pack.description=An advanced protective humanoid sentinel engineered to permanently erase The Locust and similar invulnerable horror entities.
+entity.aegis:primordial_sentinel.name=Aegis Primordial
+entity.aegis:primordial_sentinel.overdrive=§bAegis Primordial §8— §cOVERDRIVE
+item.spawn_egg.entity.aegis:primordial_sentinel.name=Aegis Primordial Spawn Egg
+item.aegis:aegis_core.name=Aegis Core
+item.aegis:aegis_core=Aegis Core

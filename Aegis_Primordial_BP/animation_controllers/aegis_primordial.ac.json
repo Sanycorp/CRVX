@@ -1,0 +1,95 @@
+{
+  "format_version": "1.10.0",
+  "animation_controllers": {
+    "controller.animation.aegis_primordial.bp_state": {
+      "initial_state": "spawning",
+      "states": {
+        "spawning": {
+          "animations": [
+            "bp_spawn"
+          ],
+          "transitions": [
+            {
+              "guard": "q.property('aegis:state') != 'spawning'"
+            }
+          ]
+        },
+        "guard": {
+          "on_entry": [
+            "/scriptevent aegis:register guard"
+          ],
+          "transitions": [
+            {
+              "overdrive": "q.property('aegis:state') == 'overdrive'"
+            },
+            {
+              "null_sever": "q.property('aegis:state') == 'null_sever'"
+            },
+            {
+              "aura": "q.property('aegis:state') == 'aura'"
+            },
+            {
+              "fading": "q.property('aegis:state') == 'fading'"
+            }
+          ]
+        },
+        "overdrive": {
+          "on_entry": [
+            "/particle aegis:overdrive_flare ~ ~1.2 ~"
+          ],
+          "transitions": [
+            {
+              "null_sever": "q.property('aegis:state') == 'null_sever'"
+            },
+            {
+              "guard": "q.property('aegis:state') == 'guard'"
+            },
+            {
+              "fading": "q.property('aegis:state') == 'fading'"
+            }
+          ]
+        },
+        "null_sever": {
+          "animations": [
+            "bp_null_sever"
+          ],
+          "on_exit": [
+            "/scriptevent aegis:null_sever release"
+          ],
+          "transitions": [
+            {
+              "overdrive": "q.property('aegis:state') == 'overdrive'"
+            },
+            {
+              "guard": "q.property('aegis:state') == 'guard'"
+            },
+            {
+              "fading": "q.property('aegis:state') == 'fading'"
+            }
+          ]
+        },
+        "aura": {
+          "animations": [
+            "bp_aura"
+          ],
+          "transitions": [
+            {
+              "guard": "q.property('aegis:state') == 'guard'"
+            },
+            {
+              "overdrive": "q.property('aegis:state') == 'overdrive'"
+            },
+            {
+              "fading": "q.property('aegis:state') == 'fading'"
+            }
+          ]
+        },
+        "fading": {
+          "on_entry": [
+            "/particle aegis:dissolve ~ ~1 ~"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+ "entity_sounds": {
+  "entities": {
+   "aegis:primordial_sentinel": {
+    "volume": 1.0,
+    "pitch": [
+     0.95,
+     1.05
+    ],
+    "events": {
+     "ambient": {
+      "sound": "aegis.idle",
+      "volume": 0.5
+     },
+     "step": {
+      "sound": "aegis.step",
+      "volume": 0.6
+     },
+     "hurt": {
+      "sound": "aegis.blink",
+      "volume": 0.5,
+      "pitch": [
+       1.2,
+       1.4
+      ]
+     },
+     "death": {
+      "sound": "aegis.death"
+     },
+     "attack": {
+      "sound": "aegis.attack.slash"
+     }
+    }
+   }
+  }
+ }
+}

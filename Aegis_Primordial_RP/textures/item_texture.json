@@ -1,0 +1,9 @@
+{
+ "resource_pack_name": "aegis_primordial",
+ "texture_name": "atlas.items",
+ "texture_data": {
+  "aegis_core": {
+   "textures": "textures/items/aegis_core"
+  }
+ }
+}

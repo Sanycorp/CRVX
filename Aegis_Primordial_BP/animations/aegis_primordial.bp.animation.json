@@ -1,0 +1,60 @@
+{
+  "format_version": "1.10.0",
+  "animations": {
+    "animation.aegis_primordial.bp_null_sever": {
+      "loop": false,
+      "animation_length": 1.6,
+      "timeline": {
+        "0.0": [
+          "/particle aegis:null_sever_charge ~ ~1.3 ~"
+        ],
+        "0.5": [
+          "/particle aegis:null_sever_charge ~ ~1.3 ~",
+          "/playsound aegis.null_sever.charge_layer @a ~ ~ ~ 0.7 1.15 0.0"
+        ],
+        "1.0": [
+          "/particle aegis:null_sever_charge ~ ~1.3 ~",
+          "/particle aegis:eye_flare ~ ~1.75 ~"
+        ],
+        "1.35": [
+          "/scriptevent aegis:null_sever release",
+          "/particle aegis:null_sever_slash ~ ~1.3 ~",
+          "/particle aegis:null_sever_shockwave ~ ~0.1 ~"
+        ],
+        "1.55": [
+          "/particle aegis:void_dust ~ ~1 ~"
+        ]
+      }
+    },
+    "animation.aegis_primordial.bp_spawn": {
+      "loop": false,
+      "animation_length": 2.0,
+      "timeline": {
+        "0.0": [
+          "/particle aegis:spawn_materialize ~ ~1 ~"
+        ],
+        "0.8": [
+          "/particle aegis:blink_in ~ ~1 ~"
+        ],
+        "1.4": [
+          "/particle aegis:eye_flare ~ ~1.75 ~"
+        ],
+        "1.9": [
+          "/particle aegis:aura_ring ~ ~0.1 ~"
+        ]
+      }
+    },
+    "animation.aegis_primordial.bp_aura": {
+      "loop": false,
+      "animation_length": 1.4,
+      "timeline": {
+        "0.3": [
+          "/particle aegis:aura_ring ~ ~0.1 ~"
+        ],
+        "0.9": [
+          "/particle aegis:aura_ring ~ ~0.1 ~"
+        ]
+      }
+    }
+  }
+}
