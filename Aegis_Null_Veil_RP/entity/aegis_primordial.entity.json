@@ -1,0 +1,103 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "aegis:primordial_sentinel",
+      "min_engine_version": "1.21.90",
+
+      "materials": {
+        "default": "entity_emissive_alpha",
+        "emissive": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/aegis_primordial",
+        "emissive": "textures/entity/aegis_primordial_emissive"
+      },
+      "geometry": {
+        "default": "geometry.aegis_primordial"
+      },
+
+      "animations": {
+        "idle": "animation.aegis.idle",
+        "move": "animation.aegis.move",
+        "look_at_target": "animation.aegis.look_at_target",
+        "attack_punch": "animation.aegis.attack_punch",
+        "attack_slash": "animation.aegis.attack_slash",
+        "null_sever_charge": "animation.aegis.null_sever_charge",
+        "null_sever_release": "animation.aegis.null_sever_release",
+        "overdrive_enter": "animation.aegis.overdrive_enter",
+        "overdrive": "animation.aegis.overdrive",
+        "spawn": "animation.aegis.spawn",
+        "death": "animation.aegis.death",
+        "guardian": "animation.aegis.guardian"
+      },
+      "animation_controllers": [
+        { "lifecycle": "controller.animation.aegis.lifecycle" },
+        { "ground": "controller.animation.aegis.ground" },
+        { "mode": "controller.animation.aegis.mode" },
+        { "attacks": "controller.animation.aegis.attacks" }
+      ],
+      "scripts": {
+        "pre_animation": [
+          "v.aegis_mode = query.property('aegis:mode');",
+          "v.aegis_attack = query.property('aegis:attack');",
+          "v.is_severing = v.aegis_attack == 3.0 || v.aegis_attack == 4.0;",
+          "v.is_overdrive = v.aegis_mode >= 2.0;",
+          "v.speed = query.modified_move_speed;",
+          "v.gait = query.ground_speed;",
+          "v.breath = math.sin(query.anim_time * 1.6) * 0.5 + 0.5;",
+          "v.sway = math.sin(query.anim_time * 0.9);",
+          "v.pulse = math.sin(query.anim_time * 3.4) * 0.5 + 0.5;"
+        ],
+        "animate": [
+          "lifecycle",
+          "ground",
+          "mode",
+          "attacks"
+        ]
+      },
+
+      "sound_effects": {
+        "idle_hum": "aegis.idle_hum",
+        "spawn": "aegis.spawn",
+        "step": "aegis.step",
+        "punch": "aegis.punch_impact",
+        "slash": "aegis.slash_energy",
+        "sever_charge": "aegis.null_sever_charge",
+        "sever_release": "aegis.null_sever_release",
+        "overdrive": "aegis.overdrive_activate",
+        "hurt": "aegis.hurt",
+        "death": "aegis.death",
+        "v_target": "aegis.voice.target_acquired",
+        "v_nullify": "aegis.voice.nullifying",
+        "v_locust": "aegis.voice.locust_confirmed",
+        "v_execute": "aegis.voice.executing_null_sever",
+        "v_erased": "aegis.voice.anomaly_erased",
+        "v_secure": "aegis.voice.area_secured",
+        "v_overdrive": "aegis.voice.overdrive_engaged"
+      },
+      "particle_effects": {
+        "eye_glow": "aegis:eye_glow",
+        "chest_pulse": "aegis:chest_core_pulse",
+        "sever_charge": "aegis:null_sever_charge",
+        "sever_blast": "aegis:null_sever_blast",
+        "aura_ring": "aegis:aura_ring",
+        "spawn_dissolve": "aegis:spawn_dissolve",
+        "impact_hit": "aegis:impact_hit",
+        "void_step": "aegis:void_step",
+        "death_dissolve": "aegis:death_dissolve",
+        "overdrive_burst": "aegis:overdrive_burst"
+      },
+
+      "spawn_egg": {
+        "texture": "aegis_spawn_egg",
+        "base_color": "#0b1a24",
+        "overlay_color": "#1de9ff"
+      },
+      "render_controllers": [
+        "controller.render.aegis_primordial"
+      ],
+      "enable_attachables": false
+    }
+  }
+}

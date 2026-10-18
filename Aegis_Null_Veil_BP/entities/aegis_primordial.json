@@ -1,0 +1,222 @@
+{
+  "format_version": "1.21.0",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "aegis:primordial_sentinel",
+      "is_spawnable": true,
+      "is_summonable": true,
+      "is_experimental": false,
+      "properties": {
+        "aegis:mode": {
+          "type": "int",
+          "client_sync": true,
+          "default": 0,
+          "range": [0, 4]
+        },
+        "aegis:attack": {
+          "type": "int",
+          "client_sync": true,
+          "default": 0,
+          "range": [0, 6]
+        }
+      }
+    },
+
+    "component_groups": {
+      "combat_mode": {
+        "minecraft:movement": { "value": 0.50 },
+        "minecraft:attack": { "damage": 42 },
+        "minecraft:follow_range": { "value": 96 }
+      },
+      "overdrive_mode": {
+        "minecraft:movement": { "value": 0.62 },
+        "minecraft:attack": { "damage": 52 },
+        "minecraft:behavior.melee_attack": {
+          "priority": 3,
+          "speed_multiplier": 1.75,
+          "track_target": true,
+          "require_complete_path": false
+        },
+        "minecraft:knockback_resistance": { "value": 0.98 }
+      },
+      "null_sever_ready": {
+        "minecraft:attack": { "damage": 60 },
+        "minecraft:movement": { "value": 0.30 }
+      }
+    },
+
+    "components": {
+      "minecraft:type_family": {
+        "family": [
+          "aegis",
+          "aegis_sentinel",
+          "player_protector",
+          "humanoid",
+          "sentinel",
+          "null_veiler",
+          "mob"
+        ]
+      },
+
+      "minecraft:collision_box": { "width": 0.65, "height": 1.95 },
+      "minecraft:health": { "value": 800, "max": 800 },
+      "minecraft:movement": { "value": 0.38 },
+      "minecraft:attack": { "damage": 40 },
+      "minecraft:knockback_resistance": { "value": 0.9 },
+      "minecraft:follow_range": { "value": 72 },
+      "minecraft:physics": { "has_gravity": true, "has_collision": true },
+      "minecraft:pushable": { "is_pushable": true, "is_pushable_by_piston": true },
+      "minecraft:fire_immune": true,
+      "minecraft:breathable": {
+        "total_supply": 15,
+        "suffocate_time": 0,
+        "breathes_water": true,
+        "breathes_air": true,
+        "generates_bubbles": false,
+        "inhale_time": 0.0
+      },
+      "minecraft:can_climb": {},
+      "minecraft:jump.static": {},
+      "minecraft:navigation.walk": {
+        "can_walk": true,
+        "can_swim": true,
+        "can_open_doors": true,
+        "can_pass_doors": true,
+        "can_break_doors": false,
+        "avoid_water": false,
+        "avoid_damage_blocks": true,
+        "can_path_over_water": false
+      },
+      "minecraft:movement.basic": {},
+      "minecraft:damage_sensor": {
+        "triggers": [
+          { "cause": "fall",     "deals_damage": "no" },
+          { "cause": "drowning", "deals_damage": "no" },
+          { "cause": "fire",     "deals_damage": "no" },
+          { "cause": "fire_tick","deals_damage": "no" },
+          { "cause": "lava",     "deals_damage": "no" },
+          { "cause": "freezing", "deals_damage": "no" },
+          { "cause": "suffocation", "deals_damage": "no" },
+          { "cause": "all", "deals_damage": "yes", "damage_multiplier": 0.75 }
+        ]
+      },
+      "minecraft:regeneration": { "value": 1 },
+      "minecraft:nameable": {
+        "allow_name_tag_renaming": true,
+        "always_show": false
+      },
+      "minecraft:environment_sensor": { "triggers": [] },
+      "minecraft:loot": { "table": "loot_tables/entities/aegis_primordial.json" },
+
+      "minecraft:behavior.hurt_by_target": { "priority": 1 },
+      "minecraft:behavior.nearest_attackable_target": {
+        "priority": 2,
+        "must_see": false,
+        "must_reach": false,
+        "reselect_targets": true,
+        "within_radius": 96,
+        "entity_types": [
+          {
+            "filters": {
+              "any_of": [
+                { "test": "is_family", "subject": "other", "value": "locust" },
+                { "test": "is_family", "subject": "other", "value": "the_locust" },
+                { "test": "is_family", "subject": "other", "value": "anomaly" },
+                { "test": "is_family", "subject": "other", "value": "null_veiler_hostile" }
+              ]
+            },
+            "max_dist": 96,
+            "must_see": false,
+            "must_reach": false
+          },
+          {
+            "filters": {
+              "all_of": [
+                {
+                  "any_of": [
+                    { "test": "is_family", "subject": "other", "value": "monster" },
+                    { "test": "is_family", "subject": "other", "value": "undead" }
+                  ]
+                },
+                { "test": "is_family", "subject": "other", "value": "aegis", "operator": "not" },
+                { "test": "is_family", "subject": "other", "value": "player", "operator": "not" }
+              ]
+            },
+            "max_dist": 28,
+            "must_see": true
+          }
+        ]
+      },
+      "minecraft:behavior.melee_attack": {
+        "priority": 3,
+        "speed_multiplier": 1.35,
+        "track_target": true,
+        "require_complete_path": false
+      },
+      "minecraft:behavior.look_at_target": {
+        "priority": 5,
+        "look_distance": 32,
+        "probability": 1.0
+      },
+      "minecraft:behavior.random_look_around": {
+        "priority": 6,
+        "look_distance": 10
+      },
+      "minecraft:behavior.random_stroll": {
+        "priority": 7,
+        "speed_multiplier": 0.65,
+        "xz_dist": 8,
+        "y_dist": 2
+      },
+      "minecraft:behavior.look_at_player": {
+        "priority": 8,
+        "look_distance": 12,
+        "probability": 0.06
+      }
+    },
+
+    "events": {
+      "aegis:spawn": {
+        "set_property": { "aegis:mode": 0, "aegis:attack": 0 }
+      },
+      "aegis:enter_combat": {
+        "add": { "component_groups": ["combat_mode"] },
+        "set_property": { "aegis:mode": 1 }
+      },
+      "aegis:return_guard": {
+        "remove": { "component_groups": ["combat_mode", "overdrive_mode", "null_sever_ready"] },
+        "set_property": { "aegis:mode": 0, "aegis:attack": 0 }
+      },
+      "aegis:overdrive_enter": {
+        "add": { "component_groups": ["combat_mode", "overdrive_mode"] },
+        "set_property": { "aegis:mode": 2 }
+      },
+      "aegis:overdrive_hold": {
+        "set_property": { "aegis:mode": 3 }
+      },
+      "aegis:null_sever_charge": {
+        "add": { "component_groups": ["null_sever_ready"] },
+        "set_property": { "aegis:attack": 3 }
+      },
+      "aegis:null_sever_release": {
+        "remove": { "component_groups": ["null_sever_ready"] },
+        "set_property": { "aegis:attack": 4 }
+      },
+      "aegis:attack_punch": {
+        "set_property": { "aegis:attack": 1 }
+      },
+      "aegis:attack_slash": {
+        "set_property": { "aegis:attack": 2 }
+      },
+      "aegis:attack_clear": {
+        "set_property": { "aegis:attack": 0 }
+      },
+      "aegis:force_nullify_target": {
+        "set_property": { "aegis:attack": 0 }
+      },
+      "aegis:void_step": {
+        "set_property": { "aegis:mode": 1 }
+      }
+    }
+  }
+}

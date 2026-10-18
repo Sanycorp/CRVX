@@ -1,0 +1,15 @@
+# packaged artifacts (regenerate with tools/build_mcaddon.py)
+build/
+__pycache__/
+*.pyc
+
+# intermediate artwork (regenerate with tools/build_*.py)
+assets/*.png
+tools/uv_layout.json
+
+# editor / OS noise
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

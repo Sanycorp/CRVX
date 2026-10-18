@@ -1,0 +1,5 @@
+## AEGIS-PRIMORDIAL :: NULL VEIL SENTINEL
+## Resource pack strings
+
+entity.aegis:primordial_sentinel.name=Aegis Primordial
+item.spawn_egg.entity.aegis:primordial_sentinel.name=Spawn Aegis Primordial

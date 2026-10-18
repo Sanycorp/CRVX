@@ -1,0 +1,27 @@
+{
+  "format_version": "1.8.0",
+  "render_controllers": {
+    "controller.render.aegis_primordial": {
+      "geometry": "Geometry.default",
+      "materials": [
+        { "*": "Material.emissive" }
+      ],
+      "textures": [
+        "Texture.default",
+        "Texture.emissive"
+      ],
+      "is_hurt_color": {
+        "r": 0.25,
+        "g": 0.80,
+        "b": 1.00,
+        "a": 0.35
+      },
+      "on_fire_color": {
+        "r": 0.10,
+        "g": 0.70,
+        "b": 0.95,
+        "a": 0.0
+      }
+    }
+  }
+}

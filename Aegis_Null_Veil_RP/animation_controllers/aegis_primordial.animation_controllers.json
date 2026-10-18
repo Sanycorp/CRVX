@@ -1,0 +1,127 @@
+{
+  "format_version": "1.10.0",
+  "animation_controllers": {
+
+    "controller.animation.aegis.lifecycle": {
+      "initial_state": "spawning",
+      "states": {
+        "spawning": {
+          "animations": ["spawn"],
+          "transitions": [
+            { "alive": "query.life_time > 2.6" },
+            { "dying": "query.is_dying == 1.0" }
+          ]
+        },
+        "alive": {
+          "animations": ["guardian"],
+          "transitions": [
+            { "dying": "query.is_dying == 1.0" }
+          ]
+        },
+        "dying": {
+          "animations": ["death"],
+          "transitions": [
+            { "alive": "query.is_dying != 1.0 && query.life_time <= 2.6" }
+          ],
+          "on_exit": []
+        }
+      }
+    },
+
+    "controller.animation.aegis.ground": {
+      "initial_state": "standing",
+      "states": {
+        "standing": {
+          "animations": ["idle", "look_at_target"],
+          "transitions": [
+            { "moving": "query.modified_move_speed > 0.05 && !v.is_severing" }
+          ]
+        },
+        "moving": {
+          "animations": ["move", "look_at_target"],
+          "transitions": [
+            { "standing": "query.modified_move_speed <= 0.05 || v.is_severing" }
+          ]
+        }
+      }
+    },
+
+    "controller.animation.aegis.mode": {
+      "initial_state": "guard",
+      "states": {
+        "guard": {
+          "transitions": [
+            { "combat": "v.aegis_mode == 1.0" },
+            { "overdrive_in": "v.aegis_mode == 2.0" },
+            { "overdrive": "v.aegis_mode == 3.0" }
+          ]
+        },
+        "combat": {
+          "transitions": [
+            { "guard": "v.aegis_mode == 0.0" },
+            { "overdrive_in": "v.aegis_mode == 2.0" },
+            { "overdrive": "v.aegis_mode == 3.0" }
+          ]
+        },
+        "overdrive_in": {
+          "animations": ["overdrive_enter"],
+          "transitions": [
+            { "overdrive": "v.aegis_mode == 3.0" },
+            { "guard": "v.aegis_mode == 0.0" },
+            { "combat": "v.aegis_mode == 1.0" }
+          ]
+        },
+        "overdrive": {
+          "animations": ["overdrive"],
+          "transitions": [
+            { "guard": "v.aegis_mode == 0.0" },
+            { "combat": "v.aegis_mode == 1.0" },
+            { "overdrive_in": "v.aegis_mode == 2.0" }
+          ]
+        }
+      }
+    },
+
+    "controller.animation.aegis.attacks": {
+      "initial_state": "default",
+      "states": {
+        "default": {
+          "transitions": [
+            { "sever_charge": "v.aegis_attack == 3.0" },
+            { "sever_release": "v.aegis_attack == 4.0" },
+            { "slash": "v.aegis_attack == 2.0" },
+            { "punch": "v.aegis_attack == 1.0 || (variable.attack_time >= 0.0 && v.aegis_attack == 0.0 && v.aegis_mode >= 1.0)" }
+          ]
+        },
+        "punch": {
+          "animations": ["attack_punch"],
+          "transitions": [
+            { "default": "v.aegis_attack != 1.0 && variable.attack_time < 0.0" },
+            { "sever_charge": "v.aegis_attack == 3.0" }
+          ]
+        },
+        "slash": {
+          "animations": ["attack_slash"],
+          "transitions": [
+            { "default": "v.aegis_attack != 2.0" },
+            { "sever_charge": "v.aegis_attack == 3.0" }
+          ]
+        },
+        "sever_charge": {
+          "animations": ["null_sever_charge"],
+          "transitions": [
+            { "sever_release": "v.aegis_attack == 4.0" },
+            { "default": "v.aegis_attack != 3.0 && v.aegis_attack != 4.0" }
+          ]
+        },
+        "sever_release": {
+          "animations": ["null_sever_release"],
+          "transitions": [
+            { "default": "v.aegis_attack != 4.0" },
+            { "sever_charge": "v.aegis_attack == 3.0" }
+          ]
+        }
+      }
+    }
+  }
+}
