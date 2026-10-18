@@ -1,11 +1,11 @@
 {
-  "format_version": "1.21.80",
+  "format_version": "1.21.60",
   "minecraft:item": {
     "description": {
       "identifier": "aegis:aegis_core",
       "menu_category": {
         "category": "equipment",
-        "group": "itemGroup.name.sword"
+        "group": "minecraft:itemGroup.name.sword"
       }
     },
     "components": {
@@ -21,7 +21,9 @@
         "use_duration": 0.1,
         "movement_modifier": 1.0
       },
-      "aegis:summon_core": {}
+      "minecraft:custom_components": [
+        "aegis:summon_core"
+      ]
     }
   }
 }

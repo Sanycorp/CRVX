@@ -130,7 +130,7 @@ it = J(os.path.join(RP, "textures/item_texture.json"))["texture_data"]
 if item["components"]["minecraft:icon"] not in it:
     errors.append("item icon not in item_texture.json")
 js = open(os.path.join(BP, "scripts/main.js")).read()
-for comp in [k for k in item["components"] if ":" in k and not k.startswith("minecraft:")]:
+for comp in item["components"].get("minecraft:custom_components", []):
     if f'registerCustomComponent("{comp}"' not in js:
         errors.append(f"custom component {comp} not registered in script")
 

@@ -56,8 +56,8 @@ bone("head", "collar", (0, 26, 0), [((-4, 26, -4), (8, 8, 8), "skin_visor")])
 bone("hood", "head", (0, 26, 0), [
     ((-4.6, 33.6, -4.6), (9.2, 1.2, 9.2), "hood"),  # top
     ((-4.6, 25.6, 3.8), (9.2, 9.2, 1.0), "hood"),   # back
-    ((3.8, 25.6, -4.6), (1.0, 9.2, 9.2), "hood"),   # right side (model +x = left side of character)
-    ((-4.8, 25.6, -4.6), (1.0, 9.2, 9.2), "hood"),  # left side
+    ((3.8, 27.0, -4.6), (1.0, 7.8, 9.2), "hood"),   # right side
+    ((-4.8, 27.0, -4.6), (1.0, 7.8, 9.2), "hood"),  # left side
     ((-4.6, 33.0, -5.6), (9.2, 1.6, 1.4), "hood"),  # brow lip
     ((-5.0, 23.5, -1.5), (10.0, 2.6, 6.0), "hood"),  # cowl draped on shoulders
 ])
@@ -179,7 +179,7 @@ def build():
         geo_bones.append(gb)
 
     geo = {
-        "format_version": "1.21.0",
+        "format_version": "1.16.0",
         "minecraft:geometry": [{
             "description": {
                 "identifier": "geometry.aegis_primordial",

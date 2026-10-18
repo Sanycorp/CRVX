@@ -29,7 +29,7 @@
      "0.5+11*(1-1 - v.particle_age / v.particle_lifetime)",
      "0.5+11*(1-1 - v.particle_age / v.particle_lifetime)"
     ],
-    "facing_camera_mode": "direction_y",
+    "facing_camera_mode": "emitter_transform_xz",
     "uv": {
      "texture_width": 64,
      "texture_height": 64,
