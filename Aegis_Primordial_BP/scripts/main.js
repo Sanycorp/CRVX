@@ -77,6 +77,7 @@ export const CONFIG = Object.freeze({
   NULL_SEVER_COOLDOWN_TICKS: 200, // 10 s
   NULL_SEVER_RELEASE_DELAY_TICKS: 28, // cinematic delay (matches 1.4 s charge animation)
   PROXIMITY_ERASE_RADIUS: 4.5, // touching a Locust is enough — it is erased on contact
+  MELEE_BONUS_DAMAGE: 20, // extra script damage on top of the 30 BP attack vs ordinary hostiles
   AURA_INTERVAL_TICKS: 120, // 6 s
   AURA_RADIUS: 12,
   AUTO_SPAWN_ON_FIRST_DETECTION: true,
@@ -473,7 +474,14 @@ system.runInterval(() => {
 world.afterEvents.entityHitEntity.subscribe((ev) => {
   const { damagingEntity, hitEntity } = ev;
   if (!isValid(damagingEntity) || damagingEntity.typeId !== CONFIG.AEGIS_ID) return;
-  if (isLocust(hitEntity)) nullify(hitEntity, damagingEntity, "melee strike");
+  if (isLocust(hitEntity)) {
+    nullify(hitEntity, damagingEntity, "melee strike");
+  } else if (isValid(hitEntity) && !isProtected(hitEntity)) {
+    // Ordinary hostiles: guaranteed heavy strike + knock-up, bypassing armor quirks.
+    safe(() => hitEntity.applyDamage(CONFIG.MELEE_BONUS_DAMAGE, { cause: EntityDamageCause.entityAttack, damagingEntity }));
+    safe(() => hitEntity.applyKnockback({ x: hitEntity.location.x - damagingEntity.location.x, z: hitEntity.location.z - damagingEntity.location.z }, 0.45));
+    safe(() => damagingEntity.dimension.spawnParticle("aegis:melee_impact", { x: hitEntity.location.x, y: hitEntity.location.y + 1, z: hitEntity.location.z }));
+  }
 });
 
 // Also cover damage routed through BP attack component.

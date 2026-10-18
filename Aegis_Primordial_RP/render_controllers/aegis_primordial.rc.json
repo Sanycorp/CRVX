@@ -9,9 +9,7 @@
     }
    ],
    "textures": [
-    {
-     "*": "q.property('aegis:state') == 'overdrive' || q.property('aegis:state') == 'null_sever' ? Texture.overdrive : Texture.default"
-    }
+    "q.property('aegis:state') == 'overdrive' || q.property('aegis:state') == 'null_sever' ? Texture.overdrive : Texture.default"
    ],
    "is_hurt_color": {
     "r": 0.3,
@@ -25,7 +23,7 @@
     "b": 1.0,
     "a": "v.glow_overlay"
    },
-   "light_color_multiplier": "1.0 + v.glow * 0.8"
+   "light_color_multiplier": "1.0 + v.glow * 0.6"
   }
  }
 }

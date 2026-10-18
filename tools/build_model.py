@@ -46,7 +46,7 @@ bone("torso", "waist", (0, 12, 0), [
 ])
 bone("chest_core", "torso", (0, 21, -3.6), [((-1.5, 19.5, -4.2), (3, 3, 1), "glow_core", 0.1)])
 bone("collar", "torso", (0, 24, 0), [((-4.5, 24, -3.5), (9, 2, 7), "plate_dark", 0.2)])
-bone("coat_back", "waist", (0, 12, 2.5), [((-5, 0.5, 2.6), (10, 12.5, 0.8), "coat")])
+bone("coat_back", "waist", (0, 12, 2.5), [((-5.2, 0.5, 2.6), (10.4, 12.5, 0.8), "coat"), ((-5.6, 0.5, 3.2), (11.2, 6, 0.6), "coat")])
 bone("coat_front_l", "waist", (0.5, 12, -2.5), [((0.6, 2, -3.4), (4.4, 10.5, 0.8), "coat")])
 bone("coat_front_r", "waist", (-0.5, 12, -2.5), [((-5, 2, -3.4), (4.4, 10.5, 0.8), "coat")])
 bone("coat_side_l", "waist", (5, 12, 0), [((5.0, 2, -2.4), (0.8, 10.5, 4.8), "coat")])
@@ -58,7 +58,8 @@ bone("hood", "head", (0, 26, 0), [
     ((-4.6, 25.6, 3.8), (9.2, 9.2, 1.0), "hood"),   # back
     ((3.8, 25.6, -4.6), (1.0, 9.2, 9.2), "hood"),   # right side (model +x = left side of character)
     ((-4.8, 25.6, -4.6), (1.0, 9.2, 9.2), "hood"),  # left side
-    ((-4.6, 33.0, -5.4), (9.2, 1.4, 1.2), "hood"),  # brow lip
+    ((-4.6, 33.0, -5.6), (9.2, 1.6, 1.4), "hood"),  # brow lip
+    ((-5.0, 23.5, -1.5), (10.0, 2.6, 6.0), "hood"),  # cowl draped on shoulders
 ])
 bone("eye_l", "head", (1.8, 30.5, -4.0), [((0.9, 30.2, -4.35), (2.0, 0.7, 0.4), "glow")])
 bone("eye_r", "head", (-1.8, 30.5, -4.0), [((-2.9, 30.2, -4.35), (2.0, 0.7, 0.4), "glow")])
@@ -343,9 +344,16 @@ def paint_face(img, rect, material, face, cube_size, overdrive, seed):
             # visor sheen
             for i in range(0, w, 6):
                 img.putpixel((x0 + i, y0 + 2), (60, 80, 100, 255))
-            # mouth + chin shadow
-            my = y0 + int(h * 0.80)
-            d.line([(x0 + int(w * 0.38), my), (x0 + int(w * 0.62), my)], fill=(150, 100, 90, 255))
+            # nose shadow, cheek shading, mouth + chin shadow
+            nx = x0 + w // 2
+            d.line([(nx, y0 + visor_h + 1), (nx, y0 + visor_h + int(h * 0.12))], fill=lerp(skin, (0, 0, 0), 0.25) + (255,))
+            d.line([(nx + 1, y0 + visor_h + int(h * 0.10)), (nx + 2, y0 + visor_h + int(h * 0.12))], fill=lerp(skin, (0, 0, 0), 0.35) + (255,))
+            for cx_ in (x0 + 2, x0 + w - 3):
+                for yy in range(y0 + visor_h + 1, y0 + h - 2):
+                    img.putpixel((cx_, yy), lerp(skin, (0, 0, 0), 0.18) + (255,))
+            my = y0 + int(h * 0.82)
+            d.line([(x0 + int(w * 0.36), my), (x0 + int(w * 0.64), my)], fill=(140, 90, 85, 255))
+            d.line([(x0 + int(w * 0.38), my + 1), (x0 + int(w * 0.62), my + 1)], fill=lerp(skin, (255, 255, 255), 0.15) + (255,))
             d.line([(x0, y0 + h - 1), (x0 + w - 1, y0 + h - 1)], fill=lerp(skin, (0, 0, 0), 0.4) + (255,))
             d.line([(x0, y0 + visor_h + 1), (x0, y0 + h - 1)], fill=lerp(skin, (0, 0, 0), 0.3) + (255,))
             d.line([(x0 + w - 1, y0 + visor_h + 1), (x0 + w - 1, y0 + h - 1)], fill=lerp(skin, (0, 0, 0), 0.3) + (255,))
@@ -406,6 +414,68 @@ def paint_face(img, rect, material, face, cube_size, overdrive, seed):
         noise_fill(img, rect, (255, 0, 255))
 
 
+FACE_LIGHT = {"up": 1.18, "north": 1.0, "east": 0.9, "west": 0.9, "south": 0.82, "down": 0.6}
+
+
+def is_emissive(px):
+    return px[3] < 250
+
+
+def finish_face(img, rect, material, face, seed):
+    """Directional light, edge AO, cloth folds, specular and glow bloom."""
+    x0, y0, w, h = rect
+    rnd = random.Random(seed)
+    pix = img.load()
+    light = FACE_LIGHT[face]
+    for y in range(y0, y0 + h):
+        for x in range(x0, x0 + w):
+            px = pix[x, y]
+            if px[3] == 0 or is_emissive(px):
+                continue
+            # edge ambient occlusion
+            ex = min(x - x0, x0 + w - 1 - x)
+            ey = min(y - y0, y0 + h - 1 - y)
+            ao = 1.0 - 0.22 * max(0.0, 1.0 - min(ex, ey) / 3.0)
+            # vertical gradient (top lit)
+            grad = 1.08 - 0.16 * (y - y0) / max(1, h - 1)
+            m = light * ao * grad
+            if material == "coat" and face in ("north", "south", "east", "west") and h > 24:
+                # soft diagonal folds
+                fold = 0.06 * math.sin((x - x0) * 0.9 + (y - y0) * 0.25 + rnd.random() * 0.2)
+                m += fold
+            pix[x, y] = (
+                max(0, min(255, int(px[0] * m))),
+                max(0, min(255, int(px[1] * m))),
+                max(0, min(255, int(px[2] * m))),
+                255,
+            )
+    # specular highlights on plates/boots/gloves
+    if material in ("plate", "plate_dark", "boot", "glove", "belt") and w >= 6 and h >= 6:
+        for i in range(2, min(w, h) // 2):
+            xx, yy = x0 + 1 + i, y0 + 1
+            if xx < x0 + w - 1:
+                p = pix[xx, yy]
+                if not is_emissive(p):
+                    pix[xx, yy] = (min(255, p[0] + 40), min(255, p[1] + 44), min(255, p[2] + 52), 255)
+    # bloom: non-emissive cyan tint around emissive texels
+    bloom = []
+    for y in range(y0, y0 + h):
+        for x in range(x0, x0 + w):
+            if is_emissive(pix[x, y]):
+                continue
+            n = 0
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                xx, yy = x + dx, y + dy
+                if x0 <= xx < x0 + w and y0 <= yy < y0 + h and is_emissive(pix[xx, yy]):
+                    n += 1
+            if n:
+                bloom.append((x, y, n))
+    for x, y, n in bloom:
+        p = pix[x, y]
+        k = 0.22 * n
+        pix[x, y] = (int(p[0] + (40 - p[0]) * k), int(p[1] + (170 - p[1]) * k), int(p[2] + (210 - p[2]) * k), 255)
+
+
 def paint_texture(all_cubes, filename, overdrive):
     random.seed(1234)
     img = Image.new("RGBA", (TEX_SIZE, TEX_SIZE), (0, 0, 0, 0))
@@ -416,6 +486,7 @@ def paint_texture(all_cubes, filename, overdrive):
             rect = (uv["uv"][0], uv["uv"][1], uv["uv_size"][0], uv["uv_size"][1])
             seed += 1
             paint_face(img, rect, c["material"], f, c["size"], overdrive, seed)
+            finish_face(img, rect, c["material"], f, seed)
     out = os.path.join(RP, "textures/entity", filename)
     os.makedirs(os.path.dirname(out), exist_ok=True)
     img.save(out)

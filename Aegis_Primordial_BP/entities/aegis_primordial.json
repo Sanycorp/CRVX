@@ -67,11 +67,6 @@
         "minecraft:movement": {
           "value": 0.38
         },
-        "minecraft:attack": {
-          "damage": 30,
-          "effect_name": "weakness",
-          "effect_duration": 5
-        },
         "minecraft:behavior.random_stroll": {
           "priority": 9,
           "speed_multiplier": 0.6,
@@ -166,21 +161,33 @@
               },
               "max_dist": 64,
               "must_see": false
+            },
+            {
+              "filters": {
+                "all_of": [
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "value": "monster"
+                  },
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "operator": "!=",
+                    "value": "player"
+                  },
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "operator": "!=",
+                    "value": "aegis"
+                  }
+                ]
+              },
+              "max_dist": 20,
+              "must_see": true
             }
           ]
-        },
-        "minecraft:behavior.melee_box_attack": {
-          "priority": 2,
-          "speed_multiplier": 1.35,
-          "track_target": true,
-          "reach_multiplier": 2.2,
-          "horizontal_reach": 1.5,
-          "cooldown_time": 0.8,
-          "random_stop_interval": 0,
-          "on_attack": {
-            "event": "aegis:on_melee_hit",
-            "target": "self"
-          }
         },
         "minecraft:behavior.hurt_by_target": {
           "priority": 3,
@@ -194,6 +201,18 @@
               }
             }
           ]
+        },
+        "minecraft:behavior.melee_attack": {
+          "priority": 2,
+          "speed_multiplier": 1.35,
+          "track_target": true,
+          "reach_multiplier": 2.0,
+          "cooldown_time": 0.6,
+          "random_stop_interval": 0,
+          "on_attack": {
+            "event": "aegis:on_melee_hit",
+            "target": "self"
+          }
         }
       },
       "aegis:protective_aura": {
@@ -631,6 +650,11 @@
       },
       "minecraft:behavior.random_look_around": {
         "priority": 11
+      },
+      "minecraft:attack": {
+        "damage": 30,
+        "effect_name": "weakness",
+        "effect_duration": 5
       }
     },
     "events": {

@@ -3,7 +3,6 @@
  "minecraft:client_entity": {
   "description": {
    "identifier": "aegis:primordial_sentinel",
-   "min_engine_version": "1.21.0",
    "materials": {
     "default": "entity_emissive_alpha"
    },
@@ -31,7 +30,11 @@
      "overdrive",
      "look",
      "hurt_ctrl"
-    ]
+    ],
+    "initialize": [
+     "v.glow = 0.35; v.glow_overlay = 0.0; v.attack_time = 0.0;"
+    ],
+    "scale": "1.0"
    },
    "animations": {
     "idle": "animation.aegis_primordial.idle",
@@ -61,8 +64,7 @@
    },
    "render_controllers": [
     "controller.render.aegis_primordial"
-   ],
-   "enable_attachables": false
+   ]
   }
  }
 }
